@@ -1,4 +1,5 @@
 import debounce from 'lodash/debounce';
+import axios from 'axios';
 
 export default class SplunkEvents {
 
@@ -9,13 +10,20 @@ export default class SplunkEvents {
     this.index = config.index; // optional
 
     this.autoFlush = config.autoFlush || true;
-    this.host = config.host || 'localhost';
+    this.endpoint = config.endpoint || 'http://splunkindexers.splunk.vtex.com:8088';
     this.source = config.source || 'datasource';
     this.path = config.path || '/services/collector/event';
     this.sourcetype = config.sourcetype || 'log';
-
+    this.debug = config.debug || false;
     this.debounceTime = config.debounceTime || 2000;
     this.debouncedFlush = debounce(this.flush, this.debounceTime);
+
+    this.axiosInstance = axios.create({
+      baseURL: `${this.endpoint}`,
+      headers: {
+        'Authorization': `Splunk ${this.token}`
+      }
+    });
   }
 
   logEvent(event) {
@@ -52,11 +60,21 @@ export default class SplunkEvents {
   flush() {
     this.validateConfig();
 
-    for (var i = 0; i < this.events.length; i++) {
-      console.log('Splunk Event ' + i, this.token, this.events[i]);
+    if (this.debug) {
+      console.log(`sending ${this.events.length} to splunk`);
     }
 
-    this.events = [];
+    axios.post(this.path, this.events).then((response) => {
+      if (this.debug) {
+        console.log(`${this.events.length} events successfuly sent to splunk`);
+      }
+      this.events = [];
+    }).catch((e) => {
+      if (this.debug) {
+        console.warn('Error sending events to splunk. Retrying in 5 seconds.');
+      }
+      this.debouncedFlush();
+    });
   }
 
   validateConfig() {

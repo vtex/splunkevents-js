@@ -20,6 +20,7 @@
     "yargs": "3.32.0"
   },
   "dependencies": {
+    "axios": "^0.13.0",
     "lodash": "^4.13.1"
   },
   "author": "Tiago Neves",
