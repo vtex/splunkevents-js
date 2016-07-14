@@ -1,4 +1,4 @@
-# Splunk Events JS
+# Splunk Events
 
 Lib Javascript para criar logs no Splunk via HTTP
 
