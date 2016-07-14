@@ -17,7 +17,8 @@ export default class SplunkEvents {
     this.sourcetype = config.sourcetype || 'log';
     this.debug = config.debug || false;
     this.debounceTime = config.debounceTime || 2000;
-    this.debouncedFlush = debounce(this.flush, this.debounceTime);
+    this.debounceMaxWait = config.debounceMaxWait || 5000;
+    this.debouncedFlush = debounce(this.flush, this.debounceTime, {}, false, this.debounceMaxWait);
 
     this.axiosInstance = axios.create({
       baseURL: `${this.endpoint}`,
