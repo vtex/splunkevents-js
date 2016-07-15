@@ -41,7 +41,7 @@ splunkEvents.logEvent({
   // Max time to wait until flush events. Requires 'autoFlush' option.
   debounceMaxWait: 5000 //default
   
-  // Retry to send events using the debounced flush function 
+  // If the request fail, retry to send events using the debounced flush function 
   autoRetryFlush: true, //default
   
   // VTEX's default endpoint to Splunk
@@ -59,7 +59,14 @@ splunkEvents.logEvent({
 
 This function add events to a queue with some default data
 - Timestamp
-- Host
+- User Agent
+- Session ID
+- Browser Language
+- Screen Resolution
+- URI Host
+- URI Path
+- URI Protocol
+- URI Hash
 
 The 'event' argument expects your custom data to send to Splunk Server. 'Event' must not be null.
 
