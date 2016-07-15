@@ -3,6 +3,12 @@
 Javascript lib to create Splunk Logs via HTTP
 
 -------
+### Support
+
+- Node
+- Browser (IE8+, Firefox, Chrome, Safari and Opera)
+
+-------
 ### Example
 
 ```
