@@ -100,7 +100,7 @@ This function add events to a queue with some default data
 
 Immediately send all queued events to Splunk Server.
 
-**This is not required when using the 'autoFlush' option.**
+This is not required when using the 'autoFlush' option.
 
 
 -------
