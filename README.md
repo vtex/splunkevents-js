@@ -35,7 +35,8 @@ splunkEvents.logEvent({
   // Required. This is provided by the Splunk administrator (@caldas)
   token: 'xxxxx',
   
-  // Optional. Index created in Splunk. The 'token' option already associates the index info. This option is useful when the token have multiple indexes 
+  // Optional. Index created in Splunk. The 'token' option already associates the index info. 
+  // This option is useful when the token have multiple indexes.
   index: 'xxxxx',
   
   // A debounced function will automatically flush your events after some time
@@ -66,6 +67,7 @@ splunkEvents.logEvent({
 The 'event' argument expects your custom data to send to Splunk Server. 'Event' must not be null.
 
 This function add events to a queue with some default data
+```
 - Timestamp
 - User Agent
 - Session ID
@@ -75,6 +77,7 @@ This function add events to a queue with some default data
 - URI Path
 - URI Protocol
 - URI Hash
+```
 
 #### flush()
 
