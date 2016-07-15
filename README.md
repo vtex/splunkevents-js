@@ -11,7 +11,7 @@ Javascript lib to create Splunk Logs via HTTP
 -------
 ### ES6 Example
 
-```
+```javascript
 import SplunkEvents from 'splunk-events';
 
 let splunkEvents = new SplunkEvents();
@@ -28,7 +28,7 @@ splunkEvents.logEvent({
 -------
 ### ES5 Example
 
-```
+```javascript
 var SplunkEvents = require('splunk-events');
 
 var splunkEvents = new SplunkEvents();
@@ -47,7 +47,7 @@ splunkEvents.logEvent({
 
 
 #### config(params)
-```
+```javascript
 {
   // Required. This is provided by the Splunk administrator (@caldas)
   token: 'xxxxx',
@@ -99,7 +99,8 @@ This function add events to a queue with some default data
 #### flush()
 
 Immediately send all queued events to Splunk Server.
-This is not required when using the 'autoFlush' option.
+
+**This is not required when using the 'autoFlush' option.**
 
 
 -------
