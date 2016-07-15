@@ -70,8 +70,8 @@ This is not required when using the 'autoFlush' option.
 
 
 -------
-### Documentação do Splunk
+### Splunk Documentation
 http://dev.splunk.com/view/event-collector/SP-CAAAE6P
 
-### Exemplo de requisição pro Splunk
+### Request example
 https://www.getpostman.com/collections/671bdbe22048240fc5b5
