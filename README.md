@@ -63,6 +63,8 @@ splunkEvents.logEvent({
 
 #### logEvent(event)
 
+The 'event' argument expects your custom data to send to Splunk Server. 'Event' must not be null.
+
 This function add events to a queue with some default data
 - Timestamp
 - User Agent
@@ -73,8 +75,6 @@ This function add events to a queue with some default data
 - URI Path
 - URI Protocol
 - URI Hash
-
-The 'event' argument expects your custom data to send to Splunk Server. 'Event' must not be null.
 
 #### flush()
 
