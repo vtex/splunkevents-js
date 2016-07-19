@@ -1,4 +1,5 @@
 import debounce from 'lodash/debounce';
+import extend from 'lodash/extend';
 import axios from 'axios';
 
 export default class SplunkEvents {
@@ -25,13 +26,13 @@ export default class SplunkEvents {
       headers: {
         'Authorization': `Splunk ${this.token}`
       },
-      responseType: 'json',
-      withCredentials: false
+      responseType: 'json'
     });
   }
 
   logEvent(event) {
     this.validateEvent(event);
+    event = extend(event, this.getAdditionalInfo());
 
     let data = {
       time: new Date().getTime(),
@@ -59,6 +60,20 @@ export default class SplunkEvents {
     if (typeof event !== 'object') {
       throw 'Event must be an object';
     }
+  }
+
+  getAdditionalInfo() {
+    return {
+      userAgent: navigator.userAgent,
+      language: navigator.browserLanguage || navigator.language,
+      platform: navigator.platform,
+      screenWidth: window.screen.availWidth,
+      screenHeight: window.screen.availHeight,
+      host: window.location.host,
+      path: window.location.pathname,
+      protocol: window.location.protocol,
+      hash: window.location.hash
+    };
   }
 
   flush() {
