@@ -22,11 +22,11 @@ import SplunkEvents from 'splunk-events';
 let splunkEvents = new SplunkEvents();
 
 splunkEvents.config({
-  token: 'xxx', // required
+  token: 'YOUR_TOKEN_HERE', // required
 });
 
 splunkEvents.logEvent({
-  user: 'tiago'
+  username: 'vader'
 });
 ```
 
@@ -39,11 +39,11 @@ var SplunkEvents = require('splunk-events');
 var splunkEvents = new SplunkEvents();
 
 splunkEvents.config({
-  token: 'xxx', // required
+  token: 'YOUR_TOKEN_HERE', // required
 });
 
 splunkEvents.logEvent({
-  user: 'tiago'
+  username: 'vader'
 });
 ```
 
