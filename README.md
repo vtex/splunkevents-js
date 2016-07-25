@@ -55,14 +55,14 @@ splunkEvents.logEvent({
 ```javascript
 {
   // Required. Splunk server endpoint
-  endpoint: 'xxxxx',
+  endpoint: 'YOUR_SPLUNK_ENDPOINT',
 
   // Required. This is provided by the Splunk administrator
-  token: 'xxxxx',
+  token: 'YOUR_TOKEN',
   
   // Optional. Index created in Splunk. The 'token' option already associates the index info. 
   // This option is useful when the token have multiple indexes.
-  index: 'xxxxx',
+  index: 'YOUR_INDEX',
   
   // A debounced function will automatically flush your events after some time
   autoFlush: true, //default
