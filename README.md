@@ -9,6 +9,11 @@ Javascript lib to create Splunk Logs via HTTP
 - Browser (IE8+, Firefox, Chrome, Safari and Opera)
 
 -------
+### Setup
+
+```npm install splunk-events```
+
+-------
 ### ES6 Example
 
 ```javascript
