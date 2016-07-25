@@ -49,7 +49,10 @@ splunkEvents.logEvent({
 #### config(params)
 ```javascript
 {
-  // Required. This is provided by the Splunk administrator (@caldas)
+  // Required. Splunk server endpoint
+  endpoint: 'xxxxx',
+
+  // Required. This is provided by the Splunk administrator
   token: 'xxxxx',
   
   // Optional. Index created in Splunk. The 'token' option already associates the index info. 
@@ -67,9 +70,6 @@ splunkEvents.logEvent({
   
   // If the request fail, retry to send events using the debounced flush function 
   autoRetryFlush: true, //default
-  
-  // VTEX's default endpoint to Splunk
-  endpoint: 'http://splunkindexers.splunk.vtex.com:8088', //default
   
   // Splunk's default path
   path: '/services/collector/event', //default
