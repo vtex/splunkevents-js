@@ -1,6 +1,6 @@
 {
   "name": "splunk-events",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Javascript lib to create Splunk Logs via HTTP",
   "main": "dist/splunk-events.js",
   "scripts": {
