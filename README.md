@@ -111,6 +111,3 @@ This is not required when using the 'autoFlush' option.
 -------
 ### Splunk Documentation
 http://dev.splunk.com/view/event-collector/SP-CAAAE6P
-
-### Request example
-https://www.getpostman.com/collections/671bdbe22048240fc5b5
