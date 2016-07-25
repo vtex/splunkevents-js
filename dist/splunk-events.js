@@ -90,12 +90,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: function config(_config) {
 	      this.events = [];
 	
+	      this.endpoint = _config.endpoint; // required
 	      this.token = _config.token; // required
-	      this.index = _config.index; // optional
 	
+	      this.index = _config.index; // optional
 	      this.autoFlush = _config.autoFlush || true;
 	      this.autoRetryFlush = _config.autoRetryFlush || true;
-	      this.endpoint = _config.endpoint || 'http://splunkindexers.splunk.vtex.com:8088';
 	      this.source = _config.source || 'datasource';
 	      this.path = _config.path || '/services/collector/event';
 	      this.sourcetype = _config.sourcetype || 'log';
@@ -125,8 +125,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        event: event
 	      };
 	
-	      console.log(data);
-	
 	      this.events.push(data);
 	
 	      if (this.autoFlush) {
@@ -153,7 +151,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: function getAdditionalInfo() {
 	      return {
 	        userAgent: navigator.userAgent,
-	        language: navigator.language,
+	        language: navigator.browserLanguage || navigator.language,
+	        platform: navigator.platform,
 	        screenWidth: window.screen.availWidth,
 	        screenHeight: window.screen.availHeight,
 	        host: window.location.host,
@@ -213,6 +212,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      if (this.token === undefined) {
 	        throw 'Token must not be undefined';
+	      }
+	
+	      if (this.endpoint === null) {
+	        throw 'endpoint must not be null';
+	      }
+	
+	      if (this.endpoint === undefined) {
+	        throw 'endpoint must not be undefined';
 	      }
 	    }
 	  }]);

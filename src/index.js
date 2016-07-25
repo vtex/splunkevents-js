@@ -7,12 +7,12 @@ export default class SplunkEvents {
   config(config) {
     this.events = [];
 
+    this.endpoint = config.endpoint; // required
     this.token = config.token; // required
-    this.index = config.index; // optional
 
+    this.index = config.index; // optional
     this.autoFlush = config.autoFlush || true;
     this.autoRetryFlush = config.autoRetryFlush || true;
-    this.endpoint = config.endpoint || 'http://splunkindexers.splunk.vtex.com:8088';
     this.source = config.source || 'datasource';
     this.path = config.path || '/services/collector/event';
     this.sourcetype = config.sourcetype || 'log';
@@ -121,6 +121,14 @@ export default class SplunkEvents {
 
     if (this.token === undefined) {
       throw 'Token must not be undefined';
+    }
+
+    if (this.endpoint === null) {
+      throw 'endpoint must not be null';
+    }
+
+    if (this.endpoint === undefined) {
+      throw 'endpoint must not be undefined';
     }
   }
 }
