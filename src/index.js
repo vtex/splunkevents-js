@@ -1,11 +1,15 @@
 import debounce from 'lodash/debounce';
 import extend from 'lodash/extend';
+import clone from 'lodash/clone';
+import concat from 'lodash/concat';
 import axios from 'axios';
 
 export default class SplunkEvents {
 
   config(config) {
     this.events = [];
+    this.pendingEvents = [];
+    this.isSendingEvents = false;
 
     this.endpoint = config.endpoint; // required
     this.token = config.token; // required
@@ -77,20 +81,34 @@ export default class SplunkEvents {
   }
 
   flush() {
-    this.validateConfig();
-
-    if (this.debug) {
-      console.log(`sending ${this.events.length} events to splunk`);
+    if (this.isSendingEvents) {
+      this.debouncedFlush();
+      return;
     }
 
-    let splunkBatchedFormattedEvents = this.formatEventsForSplunkBatch(this.events);
+    this.validateConfig();
+
+    this.pendingEvents = clone(this.events);
+    this.events = [];
+    this.isSendingEvents = true;
+
+    if (this.debug) {
+      console.log(`sending ${this.pendingEvents.length} events to splunk`);
+    }
+
+    let splunkBatchedFormattedEvents = this.formatEventsForSplunkBatch(this.pendingEvents);
 
     this.axiosInstance.post(this.path, splunkBatchedFormattedEvents).then((response) => {
       if (this.debug) {
-        console.log(`${this.events.length} events successfuly sent to splunk`);
+        console.log(`${this.pendingEvents.length} events successfuly sent to splunk`);
       }
-      this.events = [];
+      this.pendingEvents = [];
+      this.isSendingEvents = false;
     }).catch((e) => {
+      this.events = concat(this.events, this.pendingEvents);
+      this.pendingEvents = [];
+      this.isSendingEvents = false;
+
       if (this.autoRetryFlush) {
         if (this.debug) {
           console.warn('Error sending events to splunk. Retrying in 5 seconds.');
