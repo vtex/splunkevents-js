@@ -126,7 +126,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    key: 'logEvent',
 	    value: function logEvent(event) {
 	      this.validateEvent(event);
-	      event = (0, _extend2.default)(event, navigator !== 'undefined' ? this.getAdditionalInfo() : {});
+	      event = (0, _extend2.default)(event, typeof navigator !== 'undefined' ? this.getAdditionalInfo() : {});
 	
 	      var data = {
 	        time: new Date().getTime(),
