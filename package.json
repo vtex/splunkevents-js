@@ -1,11 +1,13 @@
 {
   "name": "splunk-events",
-  "version": "0.2.3",
+  "version": "0.2.5",
   "description": "Javascript lib to create Splunk Logs via HTTP",
-  "main": "dist/splunk-events.js",
+  "main": "dist-node/splunk-events.min.js",
+  "browser": "dist/splunk-events.min.js",
   "scripts": {
     "build": "webpack --mode=build",
-    "dev": "webpack --progress --colors --watch --mode=dev"
+    "dev": "webpack --progress --colors --watch --mode=dev",
+    "version": "npm run build"
   },
   "devDependencies": {
     "babel": "6.3.13",
@@ -17,11 +19,13 @@
     "eslint": "1.7.2",
     "eslint-loader": "1.1.0",
     "webpack": "1.12.9",
-    "yargs": "3.32.0"
+    "yargs": "3.32.0",
+    "extend": "^3.0.0"
   },
   "dependencies": {
     "axios": "^0.13.0",
-    "lodash": "^4.13.1"
+    "lodash": "^4.13.1",
+    "json-loader": "^0.5.4"
   },
   "author": "Tiago Neves",
   "repository": {
