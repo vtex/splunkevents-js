@@ -36,7 +36,7 @@ export default class SplunkEvents {
 
   logEvent(event) {
     this.validateEvent(event);
-    event = extend(event, this.getAdditionalInfo());
+    event = extend(event, (typeof navigator !== 'undefined') ? this.getAdditionalInfo() : {});
 
     let data = {
       time: new Date().getTime(),
