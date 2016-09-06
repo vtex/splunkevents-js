@@ -206,12 +206,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        if (_this.autoRetryFlush) {
 	          if (_this.debug) {
-	            console.warn('Error sending events to splunk. Retrying in 5 seconds.');
+	            console.warn('Error sending events to splunk. Retrying in 5 seconds.', e);
 	          }
 	          _this.debouncedFlush();
 	        } else {
 	          if (_this.debug) {
-	            console.warn('Error sending events to splunk.');
+	            console.warn('Error sending events to splunk.', e);
 	          }
 	        }
 	      });

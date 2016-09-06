@@ -111,12 +111,12 @@ export default class SplunkEvents {
 
       if (this.autoRetryFlush) {
         if (this.debug) {
-          console.warn('Error sending events to splunk. Retrying in 5 seconds.');
+          console.warn('Error sending events to splunk. Retrying in 5 seconds.', e);
         }
         this.debouncedFlush();
       } else {
         if (this.debug) {
-          console.warn('Error sending events to splunk.');
+          console.warn('Error sending events to splunk.', e);
         }
       }
     });
