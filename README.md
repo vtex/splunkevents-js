@@ -66,7 +66,10 @@ splunkEvents.logEvent({
   
   // A debounced function will automatically flush your events after some time
   autoFlush: true, //default
-  
+
+  // Add useful info
+  injectAditionalInfo: true, //default
+
   // Inactive time to wait until flush events. Requires 'autoFlush' option.
   debounceTime: 2000, //default
   

@@ -15,6 +15,7 @@ export default class SplunkEvents {
     this.token = config.token; // required
 
     this.index = config.index; // optional
+    this.injectAditionalInfo = config.injectAditionalInfo || true;
     this.autoFlush = config.autoFlush || true;
     this.autoRetryFlush = config.autoRetryFlush || true;
     this.source = config.source || 'datasource';
@@ -36,7 +37,10 @@ export default class SplunkEvents {
 
   logEvent(event) {
     this.validateEvent(event);
-    event = extend(event, (typeof navigator !== 'undefined') ? this.getAdditionalInfo() : {});
+
+    if (this.injectAditionalInfo) {
+      event = extend(event, this.getAdditionalInfo());
+    }
 
     let data = {
       time: new Date().getTime(),
@@ -67,6 +71,10 @@ export default class SplunkEvents {
   }
 
   getAdditionalInfo() {
+    if (typeof navigator === 'undefined') {
+      return {};
+    }
+
     return {
       userAgent: navigator.userAgent,
       language: navigator.browserLanguage || navigator.language,
