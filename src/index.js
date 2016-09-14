@@ -15,15 +15,15 @@ export default class SplunkEvents {
     this.token = config.token; // required
 
     this.index = config.index; // optional
-    this.injectAditionalInfo = config.injectAditionalInfo || true;
-    this.autoFlush = config.autoFlush || true;
-    this.autoRetryFlush = config.autoRetryFlush || true;
-    this.source = config.source || 'datasource';
-    this.path = config.path || '/services/collector/event';
-    this.sourcetype = config.sourcetype || 'log';
-    this.debug = config.debug || false;
-    this.debounceTime = config.debounceTime || 2000;
-    this.debounceMaxWait = config.debounceMaxWait || 5000;
+    this.injectAditionalInfo = config.injectAditionalInfo !== undefined ? config.injectAditionalInfo : true;
+    this.autoFlush = config.autoFlush !== undefined ? config.autoFlush : true;
+    this.autoRetryFlush = config.autoRetryFlush !== undefined ? config.autoRetryFlush : true;
+    this.source = config.source !== undefined ? config.source : 'datasource';
+    this.path = config.path !== undefined ? config.path : '/services/collector/event';
+    this.sourcetype = config.sourcetype !== undefined ? config.sourcetype : 'log';
+    this.debug = config.debug !== undefined ? config.debug : false;
+    this.debounceTime = config.debounceTime !== undefined ? config.debounceTime : 2000;
+    this.debounceMaxWait = config.debounceMaxWait !== undefined ? config.debounceMaxWait : 5000;
     this.debouncedFlush = debounce(this.flush, this.debounceTime, {}, false, this.debounceMaxWait);
 
     this.axiosInstance = axios.create({
