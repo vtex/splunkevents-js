@@ -44,7 +44,6 @@ export default class SplunkEvents {
 
     let data = {
       time: new Date().getTime(),
-      host: this.host,
       source: this.source,
       event: event
     };
@@ -81,7 +80,7 @@ export default class SplunkEvents {
       platform: navigator.platform,
       screenWidth: window.screen.availWidth,
       screenHeight: window.screen.availHeight,
-      host: window.location.host,
+      url: window.location.host,
       path: window.location.pathname,
       protocol: window.location.protocol,
       hash: window.location.hash
