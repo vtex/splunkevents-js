@@ -15,17 +15,18 @@
     "babel-eslint": "5.0.0",
     "babel-loader": "6.1.0",
     "babel-plugin-add-module-exports": "0.1.2",
+    "babel-plugin-transform-object-rest-spread": "^6.19.0",
     "babel-preset-es2015": "6.3.13",
     "eslint": "1.7.2",
     "eslint-loader": "1.1.0",
+    "extend": "^3.0.0",
+    "json-loader": "^0.5.4",
     "webpack": "1.12.9",
-    "yargs": "3.32.0",
-    "extend": "^3.0.0"
+    "yargs": "3.32.0"
   },
   "dependencies": {
     "axios": "^0.13.0",
-    "lodash": "^4.13.1",
-    "json-loader": "^0.5.4"
+    "debounce": "^1.0.0"
   },
   "author": "Tiago Neves",
   "repository": {
