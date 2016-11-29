@@ -25,6 +25,7 @@
     { "name": "Tiago Neves" },
     { "name": "Breno Calazans" }
   ],
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vtex/splunkevents-js.git"
