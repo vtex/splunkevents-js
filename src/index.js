@@ -12,7 +12,7 @@ export default class SplunkEvents {
     this.token = config.token; // required
 
     this.index = config.index; // optional
-    this.injectAditionalInfo = config.injectAditionalInfo !== undefined ? config.injectAditionalInfo : true;
+    this.injectAditionalInfo = config.injectAditionalInfo !== undefined ? config.injectAditionalInfo : false;
     this.autoFlush = config.autoFlush !== undefined ? config.autoFlush : true;
     this.autoRetryFlush = config.autoRetryFlush !== undefined ? config.autoRetryFlush : true;
     this.source = config.source !== undefined ? config.source : 'datasource';

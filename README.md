@@ -68,7 +68,7 @@ splunkEvents.logEvent({
   autoFlush: true, //default
 
   // Add useful info
-  injectAditionalInfo: true, //default
+  injectAditionalInfo: false, //default
 
   // Inactive time to wait until flush events. Requires 'autoFlush' option.
   debounceTime: 2000, //default
