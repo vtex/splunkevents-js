@@ -42,7 +42,6 @@ export default class SplunkEvents {
     }
 
     let data = {
-      time: new Date().getTime(),
       source: this.source,
       host: window.location.host,
       event: event
