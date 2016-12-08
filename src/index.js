@@ -16,7 +16,7 @@ export default class SplunkEvents {
     this.autoFlush = config.autoFlush !== undefined ? config.autoFlush : true;
     this.autoRetryFlush = config.autoRetryFlush !== undefined ? config.autoRetryFlush : true;
     this.source = config.source !== undefined ? config.source : 'datasource';
-    this.path = config.path !== undefined ? config.path : '/services/collector/raw';
+    this.path = config.path !== undefined ? config.path : '/services/collector/event';
     this.sourcetype = config.sourcetype !== undefined ? config.sourcetype : 'log';
     this.debug = config.debug !== undefined ? config.debug : false;
     this.debounceTime = config.debounceTime !== undefined ? config.debounceTime : 2000;
