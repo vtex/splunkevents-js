@@ -16,7 +16,7 @@ export default class SplunkEvents {
     this.autoFlush = config.autoFlush !== undefined ? config.autoFlush : true;
     this.autoRetryFlush = config.autoRetryFlush !== undefined ? config.autoRetryFlush : true;
     this.source = config.source !== undefined ? config.source : 'datasource';
-    this.path = config.path !== undefined ? config.path : '/services/collector/event';
+    this.path = config.path !== undefined ? config.path : '/services/collector/raw';
     this.sourcetype = config.sourcetype !== undefined ? config.sourcetype : 'log';
     this.debug = config.debug !== undefined ? config.debug : false;
     this.debounceTime = config.debounceTime !== undefined ? config.debounceTime : 2000;
@@ -44,6 +44,7 @@ export default class SplunkEvents {
     let data = {
       time: new Date().getTime(),
       source: this.source,
+      host: window.location.host,
       event: event
     };
 
@@ -79,7 +80,6 @@ export default class SplunkEvents {
       platform: navigator.platform,
       screenWidth: window.screen.availWidth,
       screenHeight: window.screen.availHeight,
-      url: window.location.host,
       path: window.location.pathname,
       protocol: window.location.protocol,
       hash: window.location.hash
