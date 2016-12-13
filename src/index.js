@@ -43,7 +43,7 @@ export default class SplunkEvents {
 
     let data = {
       source: this.source,
-      host: window.location.host,
+      host: (typeof window !== 'undefined' && window.location ? window.location.host : ''),
       event: event
     };
 
@@ -69,8 +69,8 @@ export default class SplunkEvents {
   }
 
   getAdditionalInfo() {
-    if (typeof navigator === 'undefined') {
-      return {};
+    if (typeof navigator === 'undefined' || typeof window === 'undefined') {
+      return '';
     }
 
     return {
