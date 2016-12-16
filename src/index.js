@@ -90,10 +90,10 @@ export default class SplunkEvents {
     }
     let screen = window.screen ? window.screen : {};
     let location = window.location ? window.location : {};
-    return `additional_info=\ "${navigator.userAgent}","` +
-    `${navigator.browserLanguage || navigator.language}","${navigator.platform}",` +
-    `"${screen.availWidth}","${screen.availHeight}","${location.pathname}", ` +
-    `"${location.protocol}","${location.hash}"`;
+    return `additional_info="${navigator.userAgent.replace(/\,/g, ';')},` +
+    `${navigator.browserLanguage || navigator.language},` +
+    `${navigator.platform},${screen.availWidth || '-'},${screen.availHeight || '-'},${location.pathname},` +
+    `${location.protocol.replace(':', '')},${location.hash || '-'}"`;
   }
 
   flush() {
