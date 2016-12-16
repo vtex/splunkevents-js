@@ -31,12 +31,7 @@ export default class SplunkEvents {
   logEvent(host, level, type, workflowType, workflowInstance, event) {
     this.validateEvent(event);
     let parsedEvent = `${level},${type},${workflowType},${workflowInstance} `;
-
-    for (var key in event) {
-      if (event.hasOwnProperty(key)) {
-        parsedEvent += `${key}="${event[key]}" `;
-      }
-    }
+    parsedEvent += this.parseEventData(event);
 
     if (this.injectAditionalInfo) {
       parsedEvent += this.getAdditionalInfo();
@@ -53,6 +48,26 @@ export default class SplunkEvents {
     if (this.autoFlush) {
       this.debouncedFlush();
     }
+  }
+
+  parseEventData(event) {
+    let parsedEvent = '';
+    for (var key in event) {
+      if (event.hasOwnProperty(key)) {
+        switch (typeof event[key]) {
+          case 'string':
+            parsedEvent += `${key}="${event[key].replace(/\"/g, '')}" `;
+            break;
+          case 'boolean':
+          case 'number':
+            parsedEvent += `${key}=${event[key]} `;
+            break;
+          default:
+            throw 'Event property must be string, number or boolean';
+        }
+      }
+    }
+    return parsedEvent;
   }
 
   validateEvent(event) {
