@@ -7,17 +7,14 @@ export default class SplunkEvents {
     this.events = [];
     this.pendingEvents = [];
     this.isSendingEvents = false;
-
     this.endpoint = config.endpoint; // required
     this.token = config.token; // required
-
-    this.index = config.index; // optional
+    this.account = config.account; // optional
     this.injectAditionalInfo = config.injectAditionalInfo !== undefined ? config.injectAditionalInfo : false;
     this.autoFlush = config.autoFlush !== undefined ? config.autoFlush : true;
     this.autoRetryFlush = config.autoRetryFlush !== undefined ? config.autoRetryFlush : true;
-    this.source = config.source !== undefined ? config.source : 'datasource';
+    this.source = 'splunkeventsjs';
     this.path = config.path !== undefined ? config.path : '/services/collector/event';
-    this.sourcetype = config.sourcetype !== undefined ? config.sourcetype : 'log';
     this.debug = config.debug !== undefined ? config.debug : false;
     this.debounceTime = config.debounceTime !== undefined ? config.debounceTime : 2000;
     this.debouncedFlush = debounce(this.flush, this.debounceTime);
@@ -31,20 +28,24 @@ export default class SplunkEvents {
     });
   }
 
-  logEvent(event) {
+  logEvent(host, level, type, workflowType, workflowInstance, event) {
     this.validateEvent(event);
+    let parsedEvent = `${level},${type},${workflowType},${workflowInstance} `;
+
+    for (var key in event) {
+      if (event.hasOwnProperty(key)) {
+        parsedEvent += `${key}="${event[key]}" `;
+      }
+    }
 
     if (this.injectAditionalInfo) {
-      event = {
-        ...event,
-        ...this.getAdditionalInfo()
-      };
+      parsedEvent += this.getAdditionalInfo();
     }
 
     let data = {
-      source: this.source,
-      host: (typeof window !== 'undefined' && window.location ? window.location.host : ''),
-      event: event
+      sourcetype: this.source,
+      host: host,
+      event: parsedEvent
     };
 
     this.events.push(data);
@@ -72,17 +73,12 @@ export default class SplunkEvents {
     if (typeof navigator === 'undefined' || typeof window === 'undefined') {
       return '';
     }
-
-    return {
-      userAgent: navigator.userAgent,
-      language: navigator.browserLanguage || navigator.language,
-      platform: navigator.platform,
-      screenWidth: window.screen.availWidth,
-      screenHeight: window.screen.availHeight,
-      path: window.location.pathname,
-      protocol: window.location.protocol,
-      hash: window.location.hash
-    };
+    let screen = window.screen ? window.screen : {};
+    let location = window.location ? window.location : {};
+    return `additional_info=\ "${navigator.userAgent}","` +
+    `${navigator.browserLanguage || navigator.language}","${navigator.platform}",` +
+    `"${screen.availWidth}","${screen.availHeight}","${location.pathname}", ` +
+    `"${location.protocol}","${location.hash}"`;
   }
 
   flush() {
