@@ -25,9 +25,13 @@ splunkEvents.config({
   token: 'YOUR_TOKEN_HERE', // required
 });
 
-splunkEvents.logEvent({
-  username: 'vader'
-});
+splunkEvents.logEvent(
+  'Critical', 
+  'Info', 
+  'WeaponConstruction', 
+  'DeathStar'
+  { username: 'vader'}
+);
 ```
 
 -------
@@ -42,9 +46,13 @@ splunkEvents.config({
   token: 'YOUR_TOKEN_HERE', // required
 });
 
-splunkEvents.logEvent({
-  username: 'vader'
-});
+splunkEvents.logEvent(
+  'Critical', 
+  'Info', 
+  'WeaponConstruction', 
+  'DeathStar'
+  { username: 'vader'}
+);
 ```
 
 -------
@@ -63,15 +71,21 @@ splunkEvents.logEvent({
   // Optional. Index created in Splunk. The 'token' option already associates the index info. 
   // This option is useful when the token have multiple indexes.
   index: 'YOUR_INDEX',
+ 
+  // Optional. Unique identifier in your system used to associate the events with the device
+  host: 'YOUR_HOST',
   
   // A debounced function will automatically flush your events after some time
   autoFlush: true, //default
 
   // Add useful info
-  injectAditionalInfo: true, //default
+  injectAditionalInfo: false, //default
 
   // Inactive time to wait until flush events. Requires 'autoFlush' option.
   debounceTime: 2000, //default
+  
+  // Max time to wait until flush events. Requires 'autoFlush' option.
+  debounceMaxWait: 5000 //default
   
   // If the request fail, retry to send events using the debounced flush function 
   autoRetryFlush: true, //default
@@ -81,18 +95,27 @@ splunkEvents.logEvent({
   
   // Important steps will be logged in the console
   debug: false, //default
+  
+  // Source of the logs
+  source: 'splunkeventsjs', //default
 }
 ```
 
-#### logEvent(event)
+#### logEvent(level, type, workflowType, workflowInstance, event)
 
-The 'event' argument expects your custom data to send to Splunk Server. 'Event' must not be null.
+'level' is the criticality of the event ('Critical','Important','Debug').
 
-This function add events to a queue with some default data
+'type' is the type of the event ('Error','Warn','Info').
+
+'workflowType' is an action or a flow's stage in the system.
+
+'workflowInstance' defines what id/element is being processed/executed/created in the workflowType.
+
+'event' is an object containing your custom data to send to Splunk. This object should be flat.
+
+if 'injectAditionalInfo' is set to true, this function adds some default data to the event
 ```
-- Timestamp
 - User Agent
-- Session ID
 - Browser Language
 - Screen Resolution
 - URI Host

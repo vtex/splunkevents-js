@@ -7,17 +7,14 @@ export default class SplunkEvents {
     this.events = [];
     this.pendingEvents = [];
     this.isSendingEvents = false;
-
     this.endpoint = config.endpoint; // required
     this.token = config.token; // required
-
-    this.index = config.index; // optional
-    this.injectAditionalInfo = config.injectAditionalInfo !== undefined ? config.injectAditionalInfo : true;
+    this.injectAditionalInfo = config.injectAditionalInfo !== undefined ? config.injectAditionalInfo : false;
     this.autoFlush = config.autoFlush !== undefined ? config.autoFlush : true;
     this.autoRetryFlush = config.autoRetryFlush !== undefined ? config.autoRetryFlush : true;
-    this.source = config.source !== undefined ? config.source : 'datasource';
+    this.source = config.source !== undefined ? config.source : 'splunkeventsjs';
     this.path = config.path !== undefined ? config.path : '/services/collector/event';
-    this.sourcetype = config.sourcetype !== undefined ? config.sourcetype : 'log';
+    this.host = config.host !== undefined ? config.host : '-';
     this.debug = config.debug !== undefined ? config.debug : false;
     this.debounceTime = config.debounceTime !== undefined ? config.debounceTime : 2000;
     this.debouncedFlush = debounce(this.flush, this.debounceTime);
@@ -31,20 +28,19 @@ export default class SplunkEvents {
     });
   }
 
-  logEvent(event) {
+  logEvent(level, type, workflowType, workflowInstance, event) {
     this.validateEvent(event);
+    let parsedEvent = `${level},${type},${workflowType},${workflowInstance} `;
+    parsedEvent += this.parseEventData(event);
 
     if (this.injectAditionalInfo) {
-      event = {
-        ...event,
-        ...this.getAdditionalInfo()
-      };
+      parsedEvent += this.getAdditionalInfo();
     }
 
     let data = {
-      time: new Date().getTime(),
-      source: this.source,
-      event: event
+      sourcetype: this.source,
+      host: this.host,
+      event: parsedEvent
     };
 
     this.events.push(data);
@@ -52,6 +48,26 @@ export default class SplunkEvents {
     if (this.autoFlush) {
       this.debouncedFlush();
     }
+  }
+
+  parseEventData(event) {
+    let parsedEvent = '';
+    for (var key in event) {
+      if (event.hasOwnProperty(key)) {
+        switch (typeof event[key]) {
+          case 'string':
+            parsedEvent += `${key}="${event[key].replace(/\"/g, '')}" `;
+            break;
+          case 'boolean':
+          case 'number':
+            parsedEvent += `${key}=${event[key]} `;
+            break;
+          default:
+            throw 'Event property must be string, number or boolean';
+        }
+      }
+    }
+    return parsedEvent;
   }
 
   validateEvent(event) {
@@ -69,21 +85,15 @@ export default class SplunkEvents {
   }
 
   getAdditionalInfo() {
-    if (typeof navigator === 'undefined') {
-      return {};
+    if (typeof navigator === 'undefined' || typeof window === 'undefined') {
+      return '';
     }
-
-    return {
-      userAgent: navigator.userAgent,
-      language: navigator.browserLanguage || navigator.language,
-      platform: navigator.platform,
-      screenWidth: window.screen.availWidth,
-      screenHeight: window.screen.availHeight,
-      url: window.location.host,
-      path: window.location.pathname,
-      protocol: window.location.protocol,
-      hash: window.location.hash
-    };
+    let screen = window.screen ? window.screen : {};
+    let location = window.location ? window.location : {};
+    return `additional_info="${navigator.userAgent.replace(/\,/g, ';')},` +
+    `${navigator.browserLanguage || navigator.language},` +
+    `${navigator.platform},${screen.availWidth || '-'},${screen.availHeight || '-'},${location.hostname},` +
+    `${location.pathname},${location.protocol.replace(':', '')},${location.hash || '-'}"`;
   }
 
   flush() {
