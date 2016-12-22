@@ -111,7 +111,7 @@ splunkEvents.logEvent(
 
 'workflowInstance' defines what id/element is being processed/executed/created in the workflowType.
 
-The 'event' argument expects your custom data to send to Splunk Server. 'event' must not be null and it's properties values must be a primitive type different of 'Null', 'Undefinded' or 'Symbol'
+'event' is an object containing your custom data to send to Splunk. This object should be flat.
 
 if 'injectAditionalInfo' is set to true, this function adds some default data to the event
 ```
