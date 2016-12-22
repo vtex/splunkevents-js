@@ -1,7 +1,4 @@
-import debounce from 'lodash/debounce';
-import extend from 'lodash/extend';
-import clone from 'lodash/clone';
-import concat from 'lodash/concat';
+import debounce from 'debounce';
 import axios from 'axios';
 
 export default class SplunkEvents {
@@ -23,8 +20,7 @@ export default class SplunkEvents {
     this.sourcetype = config.sourcetype !== undefined ? config.sourcetype : 'log';
     this.debug = config.debug !== undefined ? config.debug : false;
     this.debounceTime = config.debounceTime !== undefined ? config.debounceTime : 2000;
-    this.debounceMaxWait = config.debounceMaxWait !== undefined ? config.debounceMaxWait : 5000;
-    this.debouncedFlush = debounce(this.flush, this.debounceTime, {}, false, this.debounceMaxWait);
+    this.debouncedFlush = debounce(this.flush, this.debounceTime);
 
     this.axiosInstance = axios.create({
       baseURL: `${this.endpoint}`,
@@ -39,7 +35,10 @@ export default class SplunkEvents {
     this.validateEvent(event);
 
     if (this.injectAditionalInfo) {
-      event = extend(event, this.getAdditionalInfo());
+      event = {
+        ...event,
+        ...this.getAdditionalInfo()
+      };
     }
 
     let data = {
@@ -95,7 +94,7 @@ export default class SplunkEvents {
 
     this.validateConfig();
 
-    this.pendingEvents = clone(this.events);
+    this.pendingEvents = [].concat(this.events);
     this.events = [];
     this.isSendingEvents = true;
 
@@ -112,7 +111,7 @@ export default class SplunkEvents {
       this.pendingEvents = [];
       this.isSendingEvents = false;
     }).catch((e) => {
-      this.events = concat(this.events, this.pendingEvents);
+      this.events = this.events.concat(this.pendingEvents);
       this.pendingEvents = [];
       this.isSendingEvents = false;
 

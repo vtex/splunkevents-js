@@ -73,9 +73,6 @@ splunkEvents.logEvent({
   // Inactive time to wait until flush events. Requires 'autoFlush' option.
   debounceTime: 2000, //default
   
-  // Max time to wait until flush events. Requires 'autoFlush' option.
-  debounceMaxWait: 5000 //default
-  
   // If the request fail, retry to send events using the debounced flush function 
   autoRetryFlush: true, //default
   
