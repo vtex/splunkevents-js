@@ -14,6 +14,7 @@ export default class SplunkEvents {
     this.autoRetryFlush = config.autoRetryFlush !== undefined ? config.autoRetryFlush : true;
     this.source = 'splunkeventsjs';
     this.path = config.path !== undefined ? config.path : '/services/collector/event';
+    this.host = config.host !== undefined ? config.host : '-';
     this.debug = config.debug !== undefined ? config.debug : false;
     this.debounceTime = config.debounceTime !== undefined ? config.debounceTime : 2000;
     this.debouncedFlush = debounce(this.flush, this.debounceTime);
@@ -27,7 +28,7 @@ export default class SplunkEvents {
     });
   }
 
-  logEvent(host, level, type, workflowType, workflowInstance, event) {
+  logEvent(level, type, workflowType, workflowInstance, event) {
     this.validateEvent(event);
     let parsedEvent = `${level},${type},${workflowType},${workflowInstance} `;
     parsedEvent += this.parseEventData(event);
@@ -38,7 +39,7 @@ export default class SplunkEvents {
 
     let data = {
       sourcetype: this.source,
-      host: host,
+      host: this.host,
       event: parsedEvent
     };
 
