@@ -9,7 +9,6 @@ export default class SplunkEvents {
     this.isSendingEvents = false;
     this.endpoint = config.endpoint; // required
     this.token = config.token; // required
-    this.account = config.account; // optional
     this.injectAditionalInfo = config.injectAditionalInfo !== undefined ? config.injectAditionalInfo : false;
     this.autoFlush = config.autoFlush !== undefined ? config.autoFlush : true;
     this.autoRetryFlush = config.autoRetryFlush !== undefined ? config.autoRetryFlush : true;
