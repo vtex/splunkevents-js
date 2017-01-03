@@ -53,7 +53,7 @@ export default class SplunkEvents {
   parseEventData(event) {
     let parsedEvent = '';
     for (var key in event) {
-      if (event.hasOwnProperty(key)) {
+      if (event.hasOwnProperty(key) && event[key] != null) {
         switch (typeof event[key]) {
           case 'string':
             parsedEvent += `${key}="${event[key].replace(/\"/g, '')}" `;
