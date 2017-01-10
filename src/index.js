@@ -28,9 +28,9 @@ export default class SplunkEvents {
     });
   }
 
-  logEvent(level, type, workflowType, workflowInstance, event) {
+  logEvent(level, type, workflowType, workflowInstance, event, account) {
     this.validateEvent(event);
-    let parsedEvent = `${level},${type},${workflowType},${workflowInstance} `;
+    let parsedEvent = `${level},${type},${workflowType},${workflowInstance},${account} `;
     parsedEvent += this.parseEventData(event);
 
     if (this.injectAditionalInfo) {
