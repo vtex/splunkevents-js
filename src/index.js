@@ -28,9 +28,9 @@ export default class SplunkEvents {
     });
   }
 
-  logEvent(level, type, workflowType, workflowInstance, event) {
+  logEvent(level, type, workflowType, workflowInstance, event, account) {
     this.validateEvent(event);
-    let parsedEvent = `${level},${type},${workflowType},${workflowInstance} `;
+    let parsedEvent = `${level},${type},${workflowType},${workflowInstance},${account} `;
     parsedEvent += this.parseEventData(event);
 
     if (this.injectAditionalInfo) {
@@ -53,7 +53,7 @@ export default class SplunkEvents {
   parseEventData(event) {
     let parsedEvent = '';
     for (var key in event) {
-      if (event.hasOwnProperty(key)) {
+      if (event.hasOwnProperty(key) && event[key] != null) {
         switch (typeof event[key]) {
           case 'string':
             parsedEvent += `${key}="${event[key].replace(/\"/g, '')}" `;
