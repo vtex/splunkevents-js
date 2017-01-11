@@ -1,6 +1,6 @@
 {
   "name": "splunk-events",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Javascript lib to create Splunk Logs via HTTP",
   "main": "SplunkEvents.js",
   "scripts": {
@@ -22,9 +22,15 @@
     "debounce": "^1.0.0"
   },
   "contributors": [
-    { "name": "Tiago Neves" },
-    { "name": "Breno Calazans" },
-    { "name": "Alejandro Osorio" }
+    {
+      "name": "Tiago Neves"
+    },
+    {
+      "name": "Breno Calazans"
+    },
+    {
+      "name": "Alejandro Osorio"
+    }
   ],
   "license": "MIT",
   "repository": {
