@@ -17,10 +17,6 @@
     "eslint": "1.7.2",
     "extend": "^3.0.0"
   },
-  "dependencies": {
-    "axios": "^0.13.0",
-    "debounce": "^1.0.0"
-  },
   "contributors": [
     {
       "name": "Tiago Neves"

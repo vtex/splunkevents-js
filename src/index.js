@@ -1,5 +1,69 @@
-import debounce from 'debounce';
-import axios from 'axios';
+// debounce helper
+
+function debounce(func, wait, immediate) {
+  var timeout, args, context, timestamp, result;
+  if (wait == null) wait = 100;
+
+  function later() {
+    var last = Date.now() - timestamp;
+
+    if (last < wait && last >= 0) {
+      timeout = setTimeout(later, wait - last);
+    } else {
+      timeout = null;
+      if (!immediate) {
+        result = func.apply(context, args);
+        context = args = null;
+      }
+    }
+  };
+
+  const debounced = function () {
+    context = this;
+    args = arguments;
+    timestamp = Date.now();
+    const callNow = immediate && !timeout;
+    if (!timeout) timeout = setTimeout(later, wait);
+    if (callNow) {
+      result = func.apply(context, args);
+      context = args = null;
+    }
+
+    return result;
+  };
+
+  debounced.clear = function () {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+  };
+
+  return debounced;
+}
+
+// fetch helper
+
+function fetchRequest(context) {
+  if (typeof window !== 'undefined' && typeof window.fetch !== 'function' ||
+      typeof global !== 'undefined' && typeof global.fetch !== 'function') {
+    console.log('Error, using fetchRequest without fetch object');
+    return null;
+  }
+
+  return fetch(context.url, {
+    ...context,
+    body: context.data
+  })
+  .then((response) => {
+    if (context.responseType === 'json') {
+      return response.json();
+    }
+    return response;
+  });
+}
+
+// splunk class
 
 export default class SplunkEvents {
 
@@ -18,14 +82,10 @@ export default class SplunkEvents {
     this.debug = config.debug !== undefined ? config.debug : false;
     this.debounceTime = config.debounceTime !== undefined ? config.debounceTime : 2000;
     this.debouncedFlush = debounce(this.flush, this.debounceTime);
-
-    this.axiosInstance = axios.create({
-      baseURL: `${this.endpoint}`,
-      headers: {
-        'Authorization': `Splunk ${this.token}`
-      },
-      responseType: 'json'
-    });
+    this.request = config.request !== undefined ? config.request : fetchRequest;
+    this.headers = {
+      'Authorization': `Splunk ${this.token}`
+    };
   }
 
   logEvent(level, type, workflowType, workflowInstance, event, account) {
@@ -114,7 +174,13 @@ export default class SplunkEvents {
 
     let splunkBatchedFormattedEvents = this.formatEventsForSplunkBatch(this.pendingEvents);
 
-    this.axiosInstance.post(this.path, splunkBatchedFormattedEvents).then((response) => {
+    this.request({
+      url: `${this.endpoint}${this.path}`,
+      method: 'POST',
+      data: splunkBatchedFormattedEvents,
+      headers: this.headers,
+      responseType: 'json'
+    }).then((response) => {
       if (this.debug) {
         console.log(`${this.pendingEvents.length} events successfuly sent to splunk`);
       }
