@@ -16,7 +16,7 @@ function debounce(func, wait, immediate) {
         context = args = null;
       }
     }
-  };
+  }
 
   const debounced = function () {
     context = this;
@@ -45,8 +45,10 @@ function debounce(func, wait, immediate) {
 // fetch helper
 
 function fetchRequest(context) {
-  if (typeof window !== 'undefined' && typeof window.fetch !== 'function' ||
-      typeof global !== 'undefined' && typeof global.fetch !== 'function') {
+  if (
+    (typeof window !== 'undefined' && typeof window.fetch !== 'function') ||
+    (typeof global !== 'undefined' && typeof global.fetch !== 'function')
+  ) {
     console.log('Error, using fetchRequest without fetch object');
     return null;
   }
@@ -54,8 +56,7 @@ function fetchRequest(context) {
   return fetch(context.url, {
     ...context,
     body: context.data
-  })
-  .then((response) => {
+  }).then(response => {
     if (context.responseType === 'json') {
       return response.json();
     }
@@ -66,7 +67,6 @@ function fetchRequest(context) {
 // splunk class
 
 export default class SplunkEvents {
-
   config(config) {
     this.events = [];
     this.pendingEvents = [];
@@ -84,7 +84,7 @@ export default class SplunkEvents {
     this.debouncedFlush = debounce(this.flush, this.debounceTime);
     this.request = config.request !== undefined ? config.request : fetchRequest;
     this.headers = {
-      'Authorization': `Splunk ${this.token}`
+      Authorization: `Splunk ${this.token}`
     };
   }
 
@@ -150,10 +150,12 @@ export default class SplunkEvents {
     }
     let screen = window.screen ? window.screen : {};
     let location = window.location ? window.location : {};
-    return `additional_info="${navigator.userAgent.replace(/\,/g, ';')},` +
-    `${navigator.browserLanguage || navigator.language},` +
-    `${navigator.platform},${screen.availWidth || '-'},${screen.availHeight || '-'},${location.hostname},` +
-    `${location.pathname},${location.protocol.replace(':', '')},${location.hash || '-'}"`;
+    return (
+      `additional_info="${navigator.userAgent.replace(/\,/g, ';')},` +
+      `${navigator.browserLanguage || navigator.language},` +
+      `${navigator.platform},${screen.availWidth || '-'},${screen.availHeight || '-'},${location.hostname},` +
+      `${location.pathname},${location.protocol.replace(':', '')},${location.hash || '-'}"`
+    );
   }
 
   flush() {
@@ -180,28 +182,30 @@ export default class SplunkEvents {
       data: splunkBatchedFormattedEvents,
       headers: this.headers,
       responseType: 'json'
-    }).then((response) => {
-      if (this.debug) {
-        console.log(`${this.pendingEvents.length} events successfuly sent to splunk`);
-      }
-      this.pendingEvents = [];
-      this.isSendingEvents = false;
-    }).catch((e) => {
-      this.events = this.events.concat(this.pendingEvents);
-      this.pendingEvents = [];
-      this.isSendingEvents = false;
+    })
+      .then(response => {
+        if (this.debug) {
+          console.log(`${this.pendingEvents.length} events successfuly sent to splunk`);
+        }
+        this.pendingEvents = [];
+        this.isSendingEvents = false;
+      })
+      .catch(e => {
+        this.events = this.events.concat(this.pendingEvents);
+        this.pendingEvents = [];
+        this.isSendingEvents = false;
 
-      if (this.autoRetryFlush) {
-        if (this.debug) {
-          console.warn('Error sending events to splunk. Retrying in 5 seconds.', e);
+        if (this.autoRetryFlush) {
+          if (this.debug) {
+            console.warn('Error sending events to splunk. Retrying in 5 seconds.', e);
+          }
+          this.debouncedFlush();
+        } else {
+          if (this.debug) {
+            console.warn('Error sending events to splunk.', e);
+          }
         }
-        this.debouncedFlush();
-      } else {
-        if (this.debug) {
-          console.warn('Error sending events to splunk.', e);
-        }
-      }
-    });
+      });
   }
 
   formatEventsForSplunkBatch(events) {
