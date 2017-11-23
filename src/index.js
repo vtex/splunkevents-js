@@ -76,7 +76,7 @@ export default class SplunkEvents {
     this.injectAditionalInfo = config.injectAditionalInfo !== undefined ? config.injectAditionalInfo : false;
     this.autoFlush = config.autoFlush !== undefined ? config.autoFlush : true;
     this.autoRetryFlush = config.autoRetryFlush !== undefined ? config.autoRetryFlush : true;
-    this.source = config.source !== undefined ? config.source : 'splunkeventsjs';
+    this.source = config.source !== undefined ? config.source : 'log';
     this.path = config.path !== undefined ? config.path : '/services/collector/event';
     this.host = config.host !== undefined ? config.host : '-';
     this.debug = config.debug !== undefined ? config.debug : false;
@@ -90,7 +90,14 @@ export default class SplunkEvents {
 
   logEvent(level, type, workflowType, workflowInstance, event, account) {
     this.validateEvent(event);
-    let parsedEvent = `${level},${type},${workflowType},${workflowInstance},${account} `;
+    let parsedEvent = this.parseEventData({
+      level,
+      type,
+      workflowType,
+      workflowInstance,
+      account
+    });
+
     parsedEvent += this.parseEventData(event);
 
     if (this.injectAditionalInfo) {
