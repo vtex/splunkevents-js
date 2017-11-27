@@ -198,7 +198,7 @@ After setting up the project with ```npm install``` or ```yarn```, you can run `
 
 To deploy this package to npm, install the releasy package with ```npm install -g releasy```
 
-Make sure you are logged with vtexlab user (use ```npm login``` command)
+Make sure you are logged with the correct user (use ```npm login``` command)
 
 Then choose between patch, minor and major version to release with the commands:
 
