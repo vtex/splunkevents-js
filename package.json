@@ -5,6 +5,7 @@
   "main": "SplunkEvents.js",
   "scripts": {
     "build": "babel src/index.js -o SplunkEvents.js",
+    "postreleasy": "npm publish",
     "prepublish": "npm run build"
   },
   "devDependencies": {
