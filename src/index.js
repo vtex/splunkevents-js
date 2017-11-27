@@ -16,7 +16,7 @@ function debounce(func, wait, immediate) {
         context = args = null;
       }
     }
-  };
+  }
 
   const debounced = function () {
     context = this;
@@ -45,8 +45,10 @@ function debounce(func, wait, immediate) {
 // fetch helper
 
 function fetchRequest(context) {
-  if (typeof window !== 'undefined' && typeof window.fetch !== 'function' ||
-      typeof global !== 'undefined' && typeof global.fetch !== 'function') {
+  if (
+    (typeof window !== 'undefined' && typeof window.fetch !== 'function') ||
+    (typeof global !== 'undefined' && typeof global.fetch !== 'function')
+  ) {
     console.log('Error, using fetchRequest without fetch object');
     return null;
   }
@@ -54,8 +56,7 @@ function fetchRequest(context) {
   return fetch(context.url, {
     ...context,
     body: context.data
-  })
-  .then((response) => {
+  }).then(response => {
     if (context.responseType === 'json') {
       return response.json();
     }
@@ -66,7 +67,6 @@ function fetchRequest(context) {
 // splunk class
 
 export default class SplunkEvents {
-
   config(config) {
     this.events = [];
     this.pendingEvents = [];
@@ -76,7 +76,7 @@ export default class SplunkEvents {
     this.injectAditionalInfo = config.injectAditionalInfo !== undefined ? config.injectAditionalInfo : false;
     this.autoFlush = config.autoFlush !== undefined ? config.autoFlush : true;
     this.autoRetryFlush = config.autoRetryFlush !== undefined ? config.autoRetryFlush : true;
-    this.source = config.source !== undefined ? config.source : 'splunkeventsjs';
+    this.source = config.source !== undefined ? config.source : 'log';
     this.path = config.path !== undefined ? config.path : '/services/collector/event';
     this.host = config.host !== undefined ? config.host : '-';
     this.debug = config.debug !== undefined ? config.debug : false;
@@ -84,13 +84,20 @@ export default class SplunkEvents {
     this.debouncedFlush = debounce(this.flush, this.debounceTime);
     this.request = config.request !== undefined ? config.request : fetchRequest;
     this.headers = {
-      'Authorization': `Splunk ${this.token}`
+      Authorization: `Splunk ${this.token}`
     };
   }
 
   logEvent(level, type, workflowType, workflowInstance, event, account) {
     this.validateEvent(event);
-    let parsedEvent = `${level},${type},${workflowType},${workflowInstance},${account} `;
+    let parsedEvent = this.parseEventData({
+      level,
+      type,
+      workflowType,
+      workflowInstance,
+      account
+    });
+
     parsedEvent += this.parseEventData(event);
 
     if (this.injectAditionalInfo) {
@@ -150,10 +157,12 @@ export default class SplunkEvents {
     }
     let screen = window.screen ? window.screen : {};
     let location = window.location ? window.location : {};
-    return `additional_info="${navigator.userAgent.replace(/\,/g, ';')},` +
-    `${navigator.browserLanguage || navigator.language},` +
-    `${navigator.platform},${screen.availWidth || '-'},${screen.availHeight || '-'},${location.hostname},` +
-    `${location.pathname},${location.protocol.replace(':', '')},${location.hash || '-'}"`;
+    return (
+      `additional_info="${navigator.userAgent.replace(/\,/g, ';')},` +
+      `${navigator.browserLanguage || navigator.language},` +
+      `${navigator.platform},${screen.availWidth || '-'},${screen.availHeight || '-'},${location.hostname},` +
+      `${location.pathname},${location.protocol.replace(':', '')},${location.hash || '-'}"`
+    );
   }
 
   flush() {
@@ -180,28 +189,30 @@ export default class SplunkEvents {
       data: splunkBatchedFormattedEvents,
       headers: this.headers,
       responseType: 'json'
-    }).then((response) => {
-      if (this.debug) {
-        console.log(`${this.pendingEvents.length} events successfuly sent to splunk`);
-      }
-      this.pendingEvents = [];
-      this.isSendingEvents = false;
-    }).catch((e) => {
-      this.events = this.events.concat(this.pendingEvents);
-      this.pendingEvents = [];
-      this.isSendingEvents = false;
+    })
+      .then(response => {
+        if (this.debug) {
+          console.log(`${this.pendingEvents.length} events successfuly sent to splunk`);
+        }
+        this.pendingEvents = [];
+        this.isSendingEvents = false;
+      })
+      .catch(e => {
+        this.events = this.events.concat(this.pendingEvents);
+        this.pendingEvents = [];
+        this.isSendingEvents = false;
 
-      if (this.autoRetryFlush) {
-        if (this.debug) {
-          console.warn('Error sending events to splunk. Retrying in 5 seconds.', e);
+        if (this.autoRetryFlush) {
+          if (this.debug) {
+            console.warn('Error sending events to splunk. Retrying in 5 seconds.', e);
+          }
+          this.debouncedFlush();
+        } else {
+          if (this.debug) {
+            console.warn('Error sending events to splunk.', e);
+          }
         }
-        this.debouncedFlush();
-      } else {
-        if (this.debug) {
-          console.warn('Error sending events to splunk.', e);
-        }
-      }
-    });
+      });
   }
 
   formatEventsForSplunkBatch(events) {

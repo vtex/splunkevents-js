@@ -4,7 +4,8 @@
   "description": "Javascript lib to create Splunk Logs via HTTP",
   "main": "SplunkEvents.js",
   "scripts": {
-    "prepublish": "babel src/index.js -o SplunkEvents.js"
+    "build": "babel src/index.js -o SplunkEvents.js",
+    "prepublish": "npm run build"
   },
   "devDependencies": {
     "babel": "6.3.13",
