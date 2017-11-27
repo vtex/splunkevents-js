@@ -11,7 +11,7 @@ Javascript lib to create Splunk Logs via HTTP
 -------
 ### Setup
 
-```npm install splunk-events```
+```npm install splunk-events``` or ```yarn add splunk-events```
 
 -------
 ### ES6 Example
@@ -189,3 +189,21 @@ splunkEvents.config({
 -------
 ### Splunk Documentation
 http://dev.splunk.com/view/event-collector/SP-CAAAE6P
+
+### Development
+
+After setting up the project with ```npm install``` or ```yarn```, you can run ```npm build``` and ```npm link``` to test it on another project (see examples on how to test it above).
+
+### Deploy
+
+To deploy this package to npm, install the releasy package with ```npm install -g releasy```
+
+Make sure you are logged with vtexlab user (use ```npm login``` command)
+
+Then choose between patch, minor and major version to release with the commands:
+
+* ```releasy patch --stable```
+* ```releasy minor --stable```
+* ```releasy major --stable```
+
+After that, SplunkEvents.js will be generated with babel and uploaded to the npm registry with the new version.
