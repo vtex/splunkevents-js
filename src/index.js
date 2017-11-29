@@ -88,7 +88,7 @@ export default class SplunkEvents {
     };
   }
 
-  logEvent(level, type, workflowType, workflowInstance, event, account) {
+  logEvent = (level, type, workflowType, workflowInstance, event, account) => {
     this.validateEvent(event);
     let parsedEvent = this.parseEventData({
       level,
@@ -165,7 +165,7 @@ export default class SplunkEvents {
     );
   }
 
-  flush() {
+  flush = () => {
     if (this.isSendingEvents) {
       this.debouncedFlush();
       return;
