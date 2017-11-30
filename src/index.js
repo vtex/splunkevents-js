@@ -115,7 +115,7 @@ export default class SplunkEvents {
     if (this.autoFlush) {
       this.debouncedFlush();
     }
-  }
+  };
 
   parseEventData(event) {
     let parsedEvent = '';
@@ -213,7 +213,7 @@ export default class SplunkEvents {
           }
         }
       });
-  }
+  };
 
   formatEventsForSplunkBatch(events) {
     let splunkBatchedFormattedEvents = '';
