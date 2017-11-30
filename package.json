@@ -24,6 +24,9 @@
       "name": "Guilherme Heynemann Bruzzi"
     },
     {
+      "name": "Guilherme Freitas"
+    },
+    {
       "name": "Tiago Neves"
     },
     {
@@ -41,10 +44,5 @@
   "bugs": {
     "url": "https://github.com/vtex/splunkevents-js/issues"
   },
-  "keywords": [
-    "splunk",
-    "log",
-    "events",
-    "vtex"
-  ]
+  "keywords": ["splunk", "log", "events", "vtex"]
 }
