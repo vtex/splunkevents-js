@@ -1,6 +1,6 @@
 {
   "name": "splunk-events",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Javascript lib to create Splunk Logs via HTTP",
   "main": "SplunkEvents.js",
   "scripts": {
@@ -44,5 +44,10 @@
   "bugs": {
     "url": "https://github.com/vtex/splunkevents-js/issues"
   },
-  "keywords": ["splunk", "log", "events", "vtex"]
+  "keywords": [
+    "splunk",
+    "log",
+    "events",
+    "vtex"
+  ]
 }
