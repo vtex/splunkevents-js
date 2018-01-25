@@ -68,9 +68,9 @@ function fetchRequest(context) {
 
 export default class SplunkEvents {
   config(config) {
-    this.events = [];
-    this.pendingEvents = [];
-    this.isSendingEvents = false;
+    this.events = this.events || [];
+    this.pendingEvents = this.pendingEvents || [];
+    this.isSendingEvents = this.isSendingEvents || false;
     this.endpoint = config.endpoint; // required
     this.token = config.token; // required
     this.injectAditionalInfo = config.injectAditionalInfo !== undefined ? config.injectAditionalInfo : false;
@@ -80,9 +80,9 @@ export default class SplunkEvents {
     this.path = config.path !== undefined ? config.path : '/services/collector/event';
     this.host = config.host !== undefined ? config.host : '-';
     this.debug = config.debug !== undefined ? config.debug : false;
-    this.debounceTime = config.debounceTime !== undefined ? config.debounceTime : 2000;
-    this.debouncedFlush = debounce(this.flush, this.debounceTime);
-    this.request = config.request !== undefined ? config.request : fetchRequest;
+    this.debounceTime = config.debounceTime !== undefined ? config.debounceTime : this.debounceTime || 2000;
+    this.debouncedFlush = this.debouncedFlush || debounce(this.flush, this.debounceTime);
+    this.request = config.request !== undefined ? config.request : this.request || fetchRequest;
     this.headers = {
       Authorization: `Splunk ${this.token}`
     };
