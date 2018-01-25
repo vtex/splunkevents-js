@@ -181,6 +181,10 @@ export default class SplunkEvents {
       console.log(`sending ${this.pendingEvents.length} events to splunk`);
     }
 
+    if (_this.pendingEvents.length === 0) {
+      return;
+    }
+
     let splunkBatchedFormattedEvents = this.formatEventsForSplunkBatch(this.pendingEvents);
 
     this.request({
