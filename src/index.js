@@ -181,7 +181,7 @@ export default class SplunkEvents {
       console.log(`sending ${this.pendingEvents.length} events to splunk`);
     }
 
-    if (_this.pendingEvents.length === 0) {
+    if (this.pendingEvents.length === 0) {
       return;
     }
 
