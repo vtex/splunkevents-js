@@ -215,7 +215,7 @@ splunkEvents.config({
         // this authtoken comes from your app's ColossusContext
         'Proxy-Authorization': 'YOUR_AUTH_TOKEN',
         // here you can proxy to https and add ports if you need to
-        'X-Vtex-Proxy-To': `https://${YOUR_SPLUNK_ENDPOINT}:8088`, 
+        'X-Vtex-Proxy-To': `https://${YOUR_SPLUNK_ENDPOINT}:8080`, 
       }
     })
   }
@@ -224,7 +224,7 @@ splunkEvents.config({
   Finally you can configure your splunk cient like so:
   ```javascript
   splunkEvents.config({
-    // add your endpoint with http protocol, let IO do the proxying, trust the headers...
+    // add your endpoint with http protocol and no ports, let IO do the proxying, trust the headers...
     endpoint: `http://${SPLUNK_ENDPOINT}`,
     request: splunkCustomFetcher,
     token: 'YOUR_TOKEN_HERE',
