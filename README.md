@@ -185,6 +185,51 @@ splunkEvents.config({
   request: nodeFetchRequest,
 });
 ```
+-------
+### Using in VTEX IO (node app example)
+  Insert your splunk endpoint in your app policies (located at manifest.json) like so:
+  ```json
+  {
+    "policies": [
+      {
+        "name": "outbound-access",
+        "attrs": {
+          "host": "YOUR_SPLUNK_ENDPOINT",
+          "path": "*"
+        }
+      }
+    ]
+  }
+  ```
+  If your endpoint has a port, you don't need to add it here. The protocol neither. Just the host...
+
+  Then you have to create a new fetcher or tweak your if you already have one.
+  This is to add headers so IO can properly proxy the request...
+  ```javascript
+  function splunkCustomFetcher(context) {
+    const headers = context.headers || {}
+    return axios({
+      ...context,
+      headers: {
+        ...headers,
+        // this authtoken comes from your app's ColossusContext
+        'Proxy-Authorization': 'YOUR_AUTH_TOKEN',
+        // here you can proxy to https and add ports if you need to
+        'X-Vtex-Proxy-To': `https://${YOUR_SPLUNK_ENDPOINT}:8080`, 
+      }
+    })
+  }
+  ```
+
+  Finally you can configure your splunk cient like so:
+  ```javascript
+  splunkEvents.config({
+    // add your endpoint with http protocol and no ports, let IO do the proxying, trust the headers...
+    endpoint: `http://${SPLUNK_ENDPOINT}`,
+    request: splunkCustomFetcher,
+    token: 'YOUR_TOKEN_HERE',
+  })
+  ```
 
 -------
 ### Splunk Documentation
