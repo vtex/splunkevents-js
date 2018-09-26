@@ -29,7 +29,7 @@ splunkEvents.logEvent(
   'Critical',
   'Info',
   'WeaponConstruction',
-  'DeathStar'
+  'DeathStar',
   { username: 'vader'}
 );
 ```
@@ -50,7 +50,7 @@ splunkEvents.logEvent(
   'Critical',
   'Info',
   'WeaponConstruction',
-  'DeathStar'
+  'DeathStar',
   { username: 'vader'}
 );
 ```
@@ -85,7 +85,7 @@ splunkEvents.logEvent(
   debounceTime: 2000, //default
 
   // Max time to wait until flush events. Requires 'autoFlush' option.
-  debounceMaxWait: 5000 //default
+  debounceMaxWait: 5000, //default
 
   // Fetcher to do Splunk Events requests
   request: function with axios signature that uses global Fetch API by default // default (see more details below)
@@ -137,7 +137,7 @@ This is not required when using the 'autoFlush' option.
 
 #### Working on Node and old browsers
 
-By default this lib doesn't have any dependencies for the newer browsers (it tries to use Fetch API)
+By default this lib doesn't have any dependencies for the newer browsers (it tries to use Fetch API).
 
 But to make it work on old browsers and Node you must use axios (0.13+) as a dependency by installing it (```npm install --save axios```) and setting it on Splunk events config:
 
