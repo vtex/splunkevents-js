@@ -81,6 +81,9 @@ splunkEvents.logEvent(
   // Add useful info
   injectAditionalInfo: false, //default
 
+  // Send the current time to Splunk
+  injectTimestamp: false, //default
+
   // Inactive time to wait until flush events. Requires 'autoFlush' option.
   debounceTime: 2000, //default
 
@@ -215,7 +218,7 @@ splunkEvents.config({
         // this authtoken comes from your app's ColossusContext
         'Proxy-Authorization': 'YOUR_AUTH_TOKEN',
         // here you can proxy to https and add ports if you need to
-        'X-Vtex-Proxy-To': `https://${YOUR_SPLUNK_ENDPOINT}:8080`, 
+        'X-Vtex-Proxy-To': `https://${YOUR_SPLUNK_ENDPOINT}:8080`,
       }
     })
   }
