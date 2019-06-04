@@ -107,6 +107,7 @@ export default class SplunkEvents {
     let data = {
       sourcetype: this.source,
       host: this.host,
+      time: +new Date(),
       event: parsedEvent
     };
 
