@@ -83,6 +83,7 @@ export default class SplunkEvents {
     this.debounceTime = config.debounceTime !== undefined ? config.debounceTime : this.debounceTime || 2000;
     this.debouncedFlush = this.debouncedFlush || debounce(this.flush, this.debounceTime);
     this.request = config.request !== undefined ? config.request : this.request || fetchRequest;
+    this.injectTimestamp = config.injectTimestamp !== undefined ? config.injectTimestamp : false;
     this.headers = {
       Authorization: `Splunk ${this.token}`
     };
@@ -107,6 +108,7 @@ export default class SplunkEvents {
     let data = {
       sourcetype: this.source,
       host: this.host,
+      ...(this.injectTimestamp && { time: +new Date() }),
       event: parsedEvent
     };
 
