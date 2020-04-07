@@ -116,17 +116,18 @@ export default class SplunkEvents {
   ) => {
     this.validateEvent(eventData)
 
-    const event = {
+    const eventObj = {
       level,
       type,
       workflowType,
       workflowInstance,
       account,
-      ...(this.shouldParseEventData
-        ? this.parseEventData(eventData)
-        : eventData),
+      ...eventData,
       ...(this.injectAditionalInfo ? this.getAdditionalInfo() : {}),
     }
+    const event = this.shouldParseEventData
+      ? this.parseEventData(eventObj)
+      : eventObj
 
     let data = {
       sourcetype: this.source,
