@@ -91,7 +91,9 @@ splunkEvents.logEvent(
   debounceMaxWait: 5000, //default
 
   // Fetcher to do Splunk Events requests
-  request: `function` with axios signature that uses global Fetch API by default // default (see more details below)
+  request: ({url, method, data, headers, responseType}) => {
+    // a function with the same signature as `axios` that uses global Fetch API by default
+  }, // default (see more details below)
 
   // If the request fail, retry to send events using the debounced flush function
   autoRetryFlush: true, //default
