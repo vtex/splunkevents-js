@@ -97,32 +97,43 @@ export default class SplunkEvents {
         : this.request || fetchRequest
     this.injectTimestamp =
       config.injectTimestamp !== undefined ? config.injectTimestamp : false
+    this.shouldParseEventData =
+      config.shouldParseEventData !== undefined
+        ? config.shouldParseEventData
+        : true
     this.headers = {
       Authorization: `Splunk ${this.token}`,
     }
   }
 
-  logEvent = (level, type, workflowType, workflowInstance, event, account) => {
-    this.validateEvent(event)
-    let parsedEvent = this.parseEventData({
+  logEvent = (
+    level,
+    type,
+    workflowType,
+    workflowInstance,
+    eventData,
+    account
+  ) => {
+    this.validateEvent(eventData)
+
+    const eventObj = {
       level,
       type,
       workflowType,
       workflowInstance,
       account,
-    })
-
-    parsedEvent += this.parseEventData(event)
-
-    if (this.injectAditionalInfo) {
-      parsedEvent += this.getAdditionalInfo()
+      ...eventData,
+      ...(this.injectAditionalInfo ? this.getAdditionalInfo() : {}),
     }
+    const event = this.shouldParseEventData
+      ? this.parseEventData(eventObj)
+      : eventObj
 
     let data = {
       sourcetype: this.source,
       host: this.host,
       ...(this.injectTimestamp && { time: +new Date() }),
-      event: parsedEvent,
+      event,
     }
 
     this.events.push(data)

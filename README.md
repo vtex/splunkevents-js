@@ -91,7 +91,9 @@ splunkEvents.logEvent(
   debounceMaxWait: 5000, //default
 
   // Fetcher to do Splunk Events requests
-  request: function with axios signature that uses global Fetch API by default // default (see more details below)
+  request: ({url, method, data, headers, responseType}) => {
+    // a function with the same signature as `axios` that uses global Fetch API by default
+  }, // default (see more details below)
 
   // If the request fail, retry to send events using the debounced flush function
   autoRetryFlush: true, //default
@@ -104,10 +106,13 @@ splunkEvents.logEvent(
 
   // Source of the logs
   source: 'splunkeventsjs', //default
+
+  // Wether or not Splunk Events should parse the event data with the function `parseEventData`
+  shouldParseEventData: true // default
 }
 ```
 
-#### logEvent(level, type, workflowType, workflowInstance, event)
+#### logEvent(level, type, workflowType, workflowInstance, eventData, account)
 
 'level' is the criticality of the event ('Critical','Important','Debug').
 
@@ -117,9 +122,9 @@ splunkEvents.logEvent(
 
 'workflowInstance' defines what id/element is being processed/executed/created in the workflowType.
 
-'event' is an object containing your custom data to send to Splunk. This object should be flat and the properties with 'null' or 'undefined' value will be **omitted**.
+'eventData' is an object containing your custom data to send to Splunk. This object should be flat and properties with a 'null' or 'undefined' value will be **omitted**.
 
-'account' is the accountName (e.g. 'dreamstore','gatewayqa','instoreqa').
+'account' is the `accountName` (e.g. 'dreamstore','gatewayqa','instoreqa').
 
 if 'injectAditionalInfo' is set to true, this function adds some default data to the event
 ```
