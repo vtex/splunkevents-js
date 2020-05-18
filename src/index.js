@@ -195,7 +195,7 @@ export default class SplunkEvents {
       }`
 
     return {
-      additional_info: additionaInfo,
+      additional_info: additionalInfo,
     }
   }
 
