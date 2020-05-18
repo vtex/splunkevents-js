@@ -7,8 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Fixed
+
+- Adding additional info.
+
 ## [1.3.2] - 2020-04-08
+
 ### Added
+
 - New `shouldParseEventData` config
+
 ### Changed
+
 - Update documentation

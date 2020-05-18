@@ -56,7 +56,7 @@ function fetchRequest(context) {
   return fetch(context.url, {
     ...context,
     body: context.data,
-  }).then((response) => {
+  }).then(response => {
     if (context.responseType === 'json') {
       return response.json()
     }
@@ -183,16 +183,20 @@ export default class SplunkEvents {
     }
     let screen = window.screen ? window.screen : {}
     let location = window.location ? window.location : {}
-    return (
-      `additional_info="${navigator.userAgent.replace(/\,/g, ';')},` +
+
+    const additionaInfo =
+      `${navigator.userAgent.replace(/\,/g, ';')},` +
       `${navigator.browserLanguage || navigator.language},` +
       `${navigator.platform},${screen.availWidth || '-'},${
         screen.availHeight || '-'
       },${location.hostname},` +
       `${location.pathname},${location.protocol.replace(':', '')},${
         location.hash || '-'
-      }"`
-    )
+      }`
+
+    return {
+      additional_info: additionaInfo,
+    }
   }
 
   flush = () => {
@@ -226,7 +230,7 @@ export default class SplunkEvents {
       headers: this.headers,
       responseType: 'json',
     })
-      .then((response) => {
+      .then(response => {
         if (this.debug) {
           console.log(
             `${this.pendingEvents.length} events successfuly sent to splunk`
@@ -235,7 +239,7 @@ export default class SplunkEvents {
         this.pendingEvents = []
         this.isSendingEvents = false
       })
-      .catch((e) => {
+      .catch(e => {
         this.events = this.events.concat(this.pendingEvents)
         this.pendingEvents = []
         this.isSendingEvents = false
