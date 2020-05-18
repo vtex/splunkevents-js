@@ -1,15 +1,18 @@
 {
   "name": "splunk-events",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "Javascript lib to create Splunk Logs via HTTP",
   "main": "SplunkEvents.js",
   "scripts": {
-    "build": "babel src/index.js -o SplunkEvents.js",
+    "test": "vtex-test-tools test",
+    "build": "babel src/index.js -o SplunkEvents.js && yarn test",
+    "prereleasy": "yarn test",
     "postreleasy": "npm publish",
-    "prepublish": "npm run build"
+    "prepublish": "yarn test && yarn build"
   },
   "devDependencies": {
     "@vtex/prettier-config": "^0.1.4",
+    "@vtex/test-tools": "^3.1.0",
     "babel": "^6.23.0",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",

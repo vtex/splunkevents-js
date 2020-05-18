@@ -27,3 +27,4 @@ node_modules
 
 dist
 dist-node
+package-lock.json
