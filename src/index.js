@@ -184,7 +184,7 @@ export default class SplunkEvents {
     let screen = window.screen ? window.screen : {}
     let location = window.location ? window.location : {}
 
-    const additionaInfo =
+    const additionalInfo =
       `${navigator.userAgent.replace(/\,/g, ';')},` +
       `${navigator.browserLanguage || navigator.language},` +
       `${navigator.platform},${screen.availWidth || '-'},${
