@@ -1,6 +1,6 @@
 {
   "name": "splunk-events",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Javascript lib to create Splunk Logs via HTTP",
   "main": "SplunkEvents.js",
   "scripts": {
@@ -43,6 +43,10 @@
     },
     {
       "name": "Gabriel Vincent"
+    },
+    {
+      "name": "Felipe Sales",
+      "url": "http://salesfelipe.github.io"
     }
   ],
   "license": "MIT",
