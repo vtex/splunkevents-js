@@ -1,61 +1,9 @@
-// debounce helper
+import debounce from './debounce'
+import { FetchContext, fetchRequest } from './request'
 
-function debounce(func: () => void, wait = 100) {
-  let timeout: NodeJS.Timeout | null = null
+export { FetchContext }
 
-  const debounced = () => {
-    if (timeout) {
-      clearTimeout(timeout)
-      timeout = null
-    }
-
-    timeout = setTimeout(func, wait)
-  }
-
-  debounced.clear = () => {
-    if (!timeout) {
-      return
-    }
-
-    clearTimeout(timeout)
-    timeout = null
-  }
-
-  return debounced
-}
-
-// fetch helper
-
-interface FetchContext extends Omit<RequestInit, 'body'> {
-  url: string
-  data: BodyInit
-  responseType: string
-}
-
-function fetchRequest(context: FetchContext) {
-  if (
-    (typeof window !== 'undefined' && typeof window.fetch !== 'function') ||
-    (typeof global !== 'undefined' &&
-      typeof (global as any).fetch !== 'function')
-  ) {
-    console.log('Error, using fetchRequest without fetch object')
-    return Promise.resolve(null)
-  }
-
-  return fetch(context.url, {
-    ...context,
-    body: context.data,
-  }).then(response => {
-    if (context.responseType === 'json') {
-      return response.json()
-    }
-    return response
-  })
-}
-
-// splunk class
-
-interface Config {
+export interface Config {
   /**
    * Whether or not to automatically flush batched events
    * after calling {@link SplunkEvent#logEvent}
