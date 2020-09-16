@@ -1,0 +1,10 @@
+{
+  "extends": "@vtex/tsconfig",
+  "compilerOptions": {
+    "lib": ["dom"],
+    "target": "ES5",
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "outDir": "lib"
+  }
+}
