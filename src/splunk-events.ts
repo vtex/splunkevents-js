@@ -56,22 +56,62 @@ function fetchRequest(context: FetchContext) {
 // splunk class
 
 interface Config {
+  /**
+   * Whether or not to automatically flush batched events
+   * after calling {@link SplunkEvent#logEvent}
+   */
   autoFlush?: boolean
   autoRetryFlush?: boolean
+  /**
+   * Timeout used to batch events together in one single request.
+   */
   debounceTime?: number
+  /**
+   * Wether or not to enable debugging of the {@link SplunkEvent} class
+   * itself.
+   */
   debug?: boolean
+  /**
+   * Endpoint of your Splunk server.
+   */
   endpoint: string
+  /**
+   * Host of your Splunk server.
+   */
   host?: string
+  /**
+   * Whether or not to inject additional information about the user's
+   * device and browser in the Splunk event.
+   */
   injectAdditionalInfo?: boolean
   /**
    * @deprecated Use `injectAdditionalInfo` instead
    */
   injectAditionalInfo?: boolean
+  /**
+   * Whether or not to automatically add the timestamp to the Splunk event.
+   */
   injectTimestamp?: boolean
+  /**
+   * Path of the Splunk server endpoint.
+   */
   path?: string
+  /**
+   * Custom request function to use in environments where {@link window.fetch}
+   * is not available.
+   */
   request?: (fetchContext: FetchContext) => Promise<Response>
+  /**
+   * Whether or not to parse the event data in {@link SplunkEvent#logEvent}.
+   */
   shouldParseEventData?: boolean
+  /**
+   * Source of the Splunk event.
+   */
   source?: string
+  /**
+   * Token used to authenticate with the Splunk server.
+   */
   token: string
 }
 
@@ -108,6 +148,9 @@ export default class SplunkEvents {
   private token?: string
   private flushPending = false
 
+  /**
+   * Configure (or reconfigure) this Splunk Event instance.
+   */
   public config(config: Config) {
     this.events = this.events || []
     this.pendingEvents = this.pendingEvents || []
@@ -133,6 +176,29 @@ export default class SplunkEvents {
     }
   }
 
+  /**
+   * Logs a event to Splunk.
+   *
+   * This method will send the data to the Splunk endpoint configured
+   * in the {@link SplunkEvent#config} method. For now, you can only
+   * send primitive types such as string, numbers and booleans in the
+   * event data object.
+   *
+   * @argument level Level of criticity of this log, use values such as
+   * "Critical", "Important" or "Debug"
+   * @argument type Type of this log, use values such as "Error", "Warn"
+   * or "Info"
+   * @argument workflowType Type of this "workflow", you can use something
+   * related to your application domain, such as "checkout" for events happening
+   * in the Checkout page.
+   * @argument workflowInstance A more fine-grained level of information
+   * regarding the workflow, use values such as "checkout-cart" for events
+   * that happened in the Cart page of Checkout.
+   * @argument eventData Any custom event data you may find useful to log
+   * together that can provide more information in case of debugging.
+   * @argument account In multi-tenant environment it can be useful to know
+   * the exact account this event is happnening in, to ease the debugging.
+   */
   public logEvent = (
     level: string,
     type: string,
@@ -170,6 +236,10 @@ export default class SplunkEvents {
     }
   }
 
+  /**
+   * Exposes the implementation for the request function
+   * used to send the events to the Splunk API.
+   */
   public request(fetchContext: FetchContext) {
     return this._requestImpl!(fetchContext)
   }
@@ -234,7 +304,13 @@ export default class SplunkEvents {
     }
   }
 
-  public flush = () => {
+  /**
+   * Flushes pending events into one single request.
+   *
+   * You won't need to use this function unless you configured
+   * this instance to not auto flush the events.
+   */
+  public flush() {
     if (this.isSendingEvents) {
       this.flushPending = true
       return
