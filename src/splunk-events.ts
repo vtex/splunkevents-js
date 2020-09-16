@@ -310,7 +310,7 @@ export default class SplunkEvents {
    * You won't need to use this function unless you configured
    * this instance to not auto flush the events.
    */
-  public flush() {
+  public flush = () => {
     if (this.isSendingEvents) {
       this.flushPending = true
       return
