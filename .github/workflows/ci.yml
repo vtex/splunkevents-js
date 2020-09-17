@@ -1,0 +1,49 @@
+name: CI
+on:
+  pull_request:
+    types:
+    - opened
+    - synchronize
+  push:
+    branches:
+    - master
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: NodeJS 12.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12.x
+    - run: |
+        yarn
+        yarn lint
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: NodeJS 12.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12.x
+    - run: |
+        yarn
+        yarn test
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: NodeJS 12.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12.x
+    - run: |
+        yarn
+        yarn build

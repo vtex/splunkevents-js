@@ -1,11 +1,12 @@
 {
   "extends": ["eslint-config-vtex"],
-
   "env": {
     "browser": true,
     "es6": true,
     "node": true
   },
-
-  "plugins": []
+  "rules": {
+    "no-console": "off",
+    "@typescript-eslint/ban-ts-ignore": "off"
+  }
 }
