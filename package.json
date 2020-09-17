@@ -8,8 +8,6 @@
     "test": "vtex-test-tools test",
     "build": "tsc -D --outDir lib ./src/splunk-events.ts",
     "lint": "eslint --ext ts .",
-    "prereleasy": "yarn test",
-    "postreleasy": "npm publish",
     "prepublishOnly": "yarn test && yarn build"
   },
   "devDependencies": {
