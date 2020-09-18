@@ -149,7 +149,7 @@ describe('SplunkEvents', () => {
     )
   })
 
-  it('should use request function passed in config', async () => {
+  it('should use request function passed in config', () => {
     const request = jest.fn(() => Promise.resolve({} as Response))
 
     splunkEvents.config({
@@ -172,7 +172,7 @@ describe('SplunkEvents', () => {
     )
   })
 
-  it('should default to fetchRequest in case request is not configured', async () => {
+  it('should default to fetchRequest in case request is not configured', () => {
     const requestMock = fetchRequest as jest.Mock
 
     splunkEvents.config({
