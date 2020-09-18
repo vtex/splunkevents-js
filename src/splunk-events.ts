@@ -116,7 +116,7 @@ export default class SplunkEvents {
     this.debounceTime = config.debounceTime ?? this.debounceTime ?? 2000
     this.debouncedFlush =
       this.debouncedFlush ?? debounce(this.flush, this.debounceTime)
-    this._requestImpl = config.request ?? this.request ?? fetchRequest
+    this._requestImpl = config.request ?? this._requestImpl ?? fetchRequest
     this.injectTimestamp = config.injectTimestamp ?? false
     this.shouldParseEventData = config.shouldParseEventData ?? true
     this.headers = {
