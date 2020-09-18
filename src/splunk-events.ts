@@ -116,7 +116,7 @@ export default class SplunkEvents {
     this.debounceTime = config.debounceTime ?? this.debounceTime ?? 2000
     this.debouncedFlush =
       this.debouncedFlush ?? debounce(this.flush, this.debounceTime)
-    this._requestImpl = config.request ?? this.request ?? fetchRequest
+    this._requestImpl = config.request ?? this._requestImpl ?? fetchRequest
     this.injectTimestamp = config.injectTimestamp ?? false
     this.shouldParseEventData = config.shouldParseEventData ?? true
     this.headers = {
@@ -125,7 +125,7 @@ export default class SplunkEvents {
   }
 
   /**
-   * Logs a event to Splunk.
+   * Logs an event to Splunk.
    *
    * This method will send the data to the Splunk endpoint configured
    * in the {@link SplunkEvent#config} method. For now, you can only
@@ -141,11 +141,11 @@ export default class SplunkEvents {
    * in the Checkout page.
    * @argument workflowInstance A more fine-grained level of information
    * regarding the workflow, use values such as "checkout-cart" for events
-   * that happened in the Cart page of Checkout.
+   * that happened in the Cart page of Checkout for example.
    * @argument eventData Any custom event data you may find useful to log
-   * together that can provide more information in case of debugging.
+   * together that can provide more information.
    * @argument account In multi-tenant environment it can be useful to know
-   * the exact account this event is happnening in, to ease the debugging.
+   * the exact account this event is happening in.
    */
   public logEvent = (
     level: string,

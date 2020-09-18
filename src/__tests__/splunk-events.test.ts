@@ -1,18 +1,23 @@
-import SplunkEvents from './splunk-events'
+import SplunkEvents from '../splunk-events'
+import { fetchRequest } from '../request'
 
 const SECOND = 1000
+
+jest.mock('../request', () => ({
+  fetchRequest: jest.fn(() => Promise.resolve({} as Response)),
+}))
 
 describe('SplunkEvents', () => {
   let splunkEvents: SplunkEvents
 
   beforeEach(() => {
     jest.useFakeTimers()
-
     splunkEvents = new SplunkEvents()
   })
 
   afterEach(() => {
     jest.runAllTimers()
+    jest.restoreAllMocks()
   })
 
   it('should initialize events', () => {
@@ -140,6 +145,51 @@ describe('SplunkEvents', () => {
         data: expect.stringContaining(
           'workflowInstance=\\"checkout-payment\\"'
         ),
+      })
+    )
+  })
+
+  it('should use request function passed in config', () => {
+    const request = jest.fn(() => Promise.resolve({} as Response))
+
+    splunkEvents.config({
+      endpoint: '/splunk',
+      token: 'splunk-token-123',
+      request,
+    })
+
+    splunkEvents.logEvent('debug', 'info', 'request', 'defaultRequestImpl', {
+      doesMyRequestSucceed: true,
+    })
+
+    jest.runAllTimers()
+
+    expect(request).toHaveBeenCalledTimes(1)
+    expect(request).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        data: expect.stringContaining('doesMyRequestSucceed=true'),
+      })
+    )
+  })
+
+  it('should default to fetchRequest in case request is not configured', () => {
+    const requestMock = fetchRequest as jest.Mock
+
+    splunkEvents.config({
+      endpoint: '/splunk',
+      token: 'splunk-token-123',
+    })
+
+    splunkEvents.logEvent('debug', 'info', 'request', 'defaultRequestImpl', {
+      doesDefaultRequestWork: true,
+    })
+
+    jest.runAllTimers()
+
+    expect(requestMock).toHaveBeenCalledTimes(1)
+    expect(requestMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        data: expect.stringContaining('doesDefaultRequestWork=true'),
       })
     )
   })
