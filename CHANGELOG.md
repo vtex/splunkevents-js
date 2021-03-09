@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.4.2] - 2021-03-09
+### Added
+- Custom header to be added in the request
+
 ## [1.4.1] - 2020-09-18
 ### Fixed
 - Infinite loop in flush without custom request function.

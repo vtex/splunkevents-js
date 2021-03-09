@@ -61,6 +61,11 @@ export interface Config {
    * Token used to authenticate with the Splunk server.
    */
   token: string
+
+  /**
+   * Custom headers to be added in the request
+   */
+  headers?: HeadersInit
 }
 
 type EventData = Record<string, string | number | boolean>
@@ -121,6 +126,8 @@ export default class SplunkEvents {
     this.shouldParseEventData = config.shouldParseEventData ?? true
     this.headers = {
       Authorization: `Splunk ${this.token}`,
+      'Content-Type': 'application/json',
+      ...config.headers,
     }
   }
 
