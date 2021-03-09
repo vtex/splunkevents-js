@@ -126,6 +126,7 @@ export default class SplunkEvents {
     this.shouldParseEventData = config.shouldParseEventData ?? true
     this.headers = {
       Authorization: `Splunk ${this.token}`,
+      'Content-Type': ' application/json',
       ...config.headers,
     }
   }
