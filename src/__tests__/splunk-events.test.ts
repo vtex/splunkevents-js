@@ -1,29 +1,34 @@
 import SplunkEvents from '../splunk-events'
-import { fetchRequest } from '../request'
+
+jest.mock('../request', () => ({
+  fetchRequest: jest.fn().mockReturnValue(Promise.resolve({})),
+}))
 
 const SECOND = 1000
 
-jest.mock('../request', () => ({
-  fetchRequest: jest.fn(() => Promise.resolve({} as Response)),
-}))
+function flushPromises() {
+  return new Promise((res) => process.nextTick(res))
+}
 
 describe('SplunkEvents', () => {
   let splunkEvents: SplunkEvents
 
   beforeEach(() => {
     jest.useFakeTimers()
+    jest.clearAllMocks()
+    jest.restoreAllMocks()
     splunkEvents = new SplunkEvents()
   })
 
   afterEach(() => {
     jest.runAllTimers()
-    jest.restoreAllMocks()
   })
 
   it('should initialize events', () => {
     expect(splunkEvents).toBeDefined()
     expect(
-      // @ts-ignore
+      // @ts-expect-error: events is private but we want to
+      // assert on it anyway without making it public
       splunkEvents.events
     ).toStrictEqual([])
     splunkEvents.config({
@@ -31,7 +36,7 @@ describe('SplunkEvents', () => {
       token: '',
     })
     expect(
-      // @ts-ignore
+      // @ts-expect-error: same as above
       splunkEvents.events
     ).toStrictEqual([])
   })
@@ -125,8 +130,7 @@ describe('SplunkEvents', () => {
       })
     )
 
-    // flush pending promises
-    await new Promise(resolve => resolve())
+    await flushPromises()
 
     // this should be enqueued for 10 seconds from now
     splunkEvents.logEvent('debug', 'info', 'checkout', 'checkout-payment', {
@@ -149,8 +153,8 @@ describe('SplunkEvents', () => {
     )
   })
 
-  it('should use request function passed in config', () => {
-    const request = jest.fn(() => Promise.resolve({} as Response))
+  it('should use request function passed in config', async () => {
+    const request = jest.fn().mockReturnValue(Promise.resolve({}))
 
     splunkEvents.config({
       endpoint: '/splunk',
@@ -163,6 +167,7 @@ describe('SplunkEvents', () => {
     })
 
     jest.runAllTimers()
+    await flushPromises()
 
     expect(request).toHaveBeenCalledTimes(1)
     expect(request).toHaveBeenLastCalledWith(
@@ -172,8 +177,8 @@ describe('SplunkEvents', () => {
     )
   })
 
-  it('should default to fetchRequest in case request is not configured', () => {
-    const requestMock = fetchRequest as jest.Mock
+  it('should default to fetchRequest in case request is not configured', async () => {
+    const requestMock = jest.requireMock('../request').fetchRequest as jest.Mock
 
     splunkEvents.config({
       endpoint: '/splunk',
@@ -192,5 +197,80 @@ describe('SplunkEvents', () => {
         data: expect.stringContaining('doesDefaultRequestWork=true'),
       })
     )
+  })
+
+  it('should use configured debounce time when a request fails', async () => {
+    const requestMock = jest.fn(() => Promise.resolve({} as Response))
+
+    splunkEvents.config({
+      endpoint: '/splunk',
+      token: 'splunk-token-123',
+      debounceTime: 2 * SECOND,
+      autoRetryFlush: true,
+      request: requestMock,
+    })
+
+    requestMock.mockReturnValueOnce(Promise.reject())
+
+    splunkEvents.logEvent('debug', 'info', 'request', 'defaultRequestImpl', {
+      doesDefaultRequestWork: true,
+    })
+
+    jest.runOnlyPendingTimers()
+    await flushPromises()
+
+    expect(requestMock).toHaveBeenCalledTimes(1)
+
+    // Skip half of the debounce time
+    jest.advanceTimersByTime(1 * SECOND)
+
+    expect(requestMock).toHaveBeenCalledTimes(1)
+
+    // Skip the remaining of the debounce time
+    jest.advanceTimersByTime(1 * SECOND)
+
+    await flushPromises()
+
+    expect(requestMock).toHaveBeenCalledTimes(2)
+  })
+
+  describe('Exponential backoff', () => {
+    it('should correctly backoff exponentially', async () => {
+      const requestMock = jest.fn().mockReturnValue(Promise.reject())
+
+      splunkEvents.config({
+        endpoint: '/splunk',
+        token: 'splunk-token-123',
+        useExponentialBackoff: true,
+        request: requestMock,
+      })
+
+      splunkEvents.logEvent(
+        'debug',
+        'info',
+        'request',
+        'defaultRequestImpl',
+        {}
+      )
+
+      await flushPromises()
+
+      expect(requestMock).toHaveBeenCalledTimes(1)
+
+      jest.advanceTimersByTime(1 * SECOND)
+      await flushPromises()
+
+      expect(requestMock).toHaveBeenCalledTimes(2)
+
+      jest.advanceTimersByTime(2 * SECOND)
+      await flushPromises()
+
+      expect(requestMock).toHaveBeenCalledTimes(3)
+
+      jest.advanceTimersByTime(4 * SECOND)
+      await flushPromises()
+
+      expect(requestMock).toHaveBeenCalledTimes(4)
+    })
   })
 })

@@ -9,6 +9,9 @@ export interface Config {
    * after calling {@link SplunkEvent#logEvent}
    */
   autoFlush?: boolean
+  /**
+   * Whether or not to automatically retry failed flushes.
+   */
   autoRetryFlush?: boolean
   /**
    * Timeout used to batch events together in one single request.
@@ -61,11 +64,26 @@ export interface Config {
    * Token used to authenticate with the Splunk server.
    */
   token: string
-
   /**
    * Custom headers to be added in the request
    */
   headers?: HeadersInit
+  /**
+   * Configures the {@link SplunkEvent#flush} method to use an
+   * exponential backoff algorithm instead of a fixed debounce time.
+   *
+   * Turned off by default. If not using autoFlush, do not pass `true`
+   * to this option as the flush method won't behave as expected.
+   */
+  useExponentialBackoff?: boolean
+  /**
+   * Maximum time, in milliseconds, to use for the exponential backoff
+   * algorithm. Once this limit has been reached, all pending events will
+   * be automatically dropped.
+   *
+   * The default limit is 60_000 milliseconds.
+   */
+  exponentialBackoffLimit?: number
 }
 
 type EventData = Record<string, string | number | boolean>
@@ -76,6 +94,9 @@ interface SplunkEvent {
   time?: number
   event: EventData | string
 }
+
+const DEFAULT_EXPONENTIAL_BACKOFF_LIMIT = 60_000
+const DEFAULT_DEBOUNCE_TIME = 2_000
 
 export default class SplunkEvents {
   private _requestImpl?: (
@@ -100,6 +121,17 @@ export default class SplunkEvents {
   private source?: string
   private token?: string
   private flushPending = false
+  private useExponentialBackoff = false
+  private exponentialBackoffLimit = DEFAULT_EXPONENTIAL_BACKOFF_LIMIT
+  private isBackoffInProgress = false
+
+  constructor(config?: Config) {
+    if (config == null) {
+      return
+    }
+
+    this.config(config)
+  }
 
   /**
    * Configure (or reconfigure) this Splunk Event instance.
@@ -118,7 +150,8 @@ export default class SplunkEvents {
     this.path = config.path ?? '/services/collector/event'
     this.host = config.host ?? '-'
     this.debug = config.debug ?? false
-    this.debounceTime = config.debounceTime ?? this.debounceTime ?? 2000
+    this.debounceTime =
+      config.debounceTime ?? this.debounceTime ?? DEFAULT_DEBOUNCE_TIME
     this.debouncedFlush =
       this.debouncedFlush ?? debounce(this.flush, this.debounceTime)
     this._requestImpl = config.request ?? this._requestImpl ?? fetchRequest
@@ -128,6 +161,57 @@ export default class SplunkEvents {
       Authorization: `Splunk ${this.token}`,
       'Content-Type': 'application/json',
       ...config.headers,
+    }
+    this.useExponentialBackoff =
+      config.useExponentialBackoff ?? this.useExponentialBackoff
+    this.exponentialBackoffLimit =
+      config.exponentialBackoffLimit ?? this.exponentialBackoffLimit
+  }
+
+  public backoffFlush = () => {
+    this.isBackoffInProgress = true
+
+    const backoffMultiplier = 2
+
+    const executeFlush = (depth = 0) => {
+      return this.flush()
+        .then(() => {
+          this.isBackoffInProgress = false
+        })
+        .catch(() => {
+          const waitTime = backoffMultiplier ** depth * 1_000
+
+          if (waitTime > this.exponentialBackoffLimit) {
+            this.events = []
+            this.isBackoffInProgress = false
+
+            return
+          }
+
+          return new Promise((resolve, reject) => {
+            setTimeout(() => {
+              executeFlush(depth + 1).then(resolve, reject)
+            }, Math.min(waitTime, this.exponentialBackoffLimit))
+          })
+        })
+    }
+
+    return executeFlush()
+  }
+
+  /**
+   * Internal flush that contains the logic for debouncing or
+   * backing off exponentially.
+   */
+  private flushEvents = () => {
+    if (this.useExponentialBackoff) {
+      if (this.isBackoffInProgress) {
+        return
+      }
+
+      this.backoffFlush()
+    } else {
+      this.debouncedFlush?.()
     }
   }
 
@@ -173,6 +257,7 @@ export default class SplunkEvents {
       ...eventData,
       ...(this.injectAdditionalInfo ? this.getAdditionalInfo() : {}),
     }
+
     const event = this.shouldParseEventData
       ? this.parseEventData(eventObj)
       : eventObj
@@ -187,7 +272,7 @@ export default class SplunkEvents {
     this.events.push(data)
 
     if (this.autoFlush) {
-      this.debouncedFlush?.()
+      this.flushEvents()
     }
   }
 
@@ -201,6 +286,7 @@ export default class SplunkEvents {
 
   private parseEventData(event: EventData) {
     let parsedEvent = ''
+
     for (const key in event) {
       if (
         Object.prototype.hasOwnProperty.call(event, key) &&
@@ -212,15 +298,20 @@ export default class SplunkEvents {
           case 'string':
             parsedEvent += `${key}="${value.replace(/"/g, '')}" `
             break
+
           case 'boolean':
+
+          // eslint-disable-next-line no-fallthrough
           case 'number':
             parsedEvent += `${key}=${value} `
             break
+
           default:
             throw new Error('Event property must be string, number or boolean')
         }
       }
     }
+
     return parsedEvent
   }
 
@@ -242,6 +333,7 @@ export default class SplunkEvents {
     if (typeof navigator === 'undefined' || typeof window === 'undefined') {
       return ''
     }
+
     const { screen, location } = window
 
     const additionalInfo =
@@ -265,10 +357,11 @@ export default class SplunkEvents {
    * You won't need to use this function unless you configured
    * this instance to not auto flush the events.
    */
-  public flush = () => {
+  public flush = (): Promise<void> => {
     if (this.isSendingEvents) {
       this.flushPending = true
-      return
+
+      return Promise.resolve()
     }
 
     this.validateConfig()
@@ -282,14 +375,14 @@ export default class SplunkEvents {
     }
 
     if (this.pendingEvents.length === 0) {
-      return
+      return Promise.resolve()
     }
 
     const splunkBatchedFormattedEvents = this.formatEventsForSplunkBatch(
       this.pendingEvents
     )
 
-    this.request({
+    return this.request({
       url: `${this.endpoint}${this.path}`,
       method: 'POST',
       data: splunkBatchedFormattedEvents,
@@ -302,27 +395,38 @@ export default class SplunkEvents {
             `${this.pendingEvents.length} events successfuly sent to splunk`
           )
         }
+
         this.pendingEvents = []
         this.isSendingEvents = false
 
-        if (this.flushPending) {
-          this.flushPending = false
-          return this.flush()
+        if (!this.flushPending) {
+          return
         }
+
+        this.flushPending = false
+
+        return this.flush()
       })
-      .catch(e => {
+      .catch((e) => {
         this.events = this.events.concat(this.pendingEvents)
         this.pendingEvents = []
         this.isSendingEvents = false
 
+        if (this.useExponentialBackoff) {
+          throw e
+        }
+
         if (this.autoRetryFlush) {
           if (this.debug) {
             console.warn(
-              'Error sending events to splunk. Retrying in 5 seconds.',
+              `Error sending events to splunk. Retrying in ${
+                (this.debounceTime ?? 0) / 1000
+              } seconds.`,
               e
             )
           }
-          this.debouncedFlush?.()
+
+          this.flushEvents()
         } else if (this.debug) {
           console.warn('Error sending events to splunk.', e)
         }
