@@ -1,10 +1,24 @@
 {
-  "extends": "@vtex/tsconfig",
   "compilerOptions": {
+    "alwaysStrict": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "jsx": "react",
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "sourceMap": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
     "lib": ["dom"],
-    "target": "ES5",
+    "target": "ES2015",
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "outDir": "lib"
-  }
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true
+  },
+  "exclude": ["node_modules"],
+  "include": ["./src/**/*.ts"]
 }
