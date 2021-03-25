@@ -27,7 +27,7 @@ function createOutputOptions(options) {
     exports: 'named',
     sourcemap: true,
     plugins: [
-      ...(options.plugins ?? []),
+      ...(options.plugins || []),
       /\.min\.js$/.test(options.file) && terser(),
     ],
     ...options,
