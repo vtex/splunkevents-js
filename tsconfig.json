@@ -1,16 +1,6 @@
 {
+  "extends": "@vtex/tsconfig",
   "compilerOptions": {
-    "alwaysStrict": true,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "jsx": "react",
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "sourceMap": true,
-    "strictFunctionTypes": true,
-    "strictNullChecks": true,
-    "strictPropertyInitialization": true,
     "lib": ["dom"],
     "target": "ES2015",
     "noUnusedLocals": false,
