@@ -2,6 +2,26 @@
 
 Javascript lib to create Splunk Logs via HTTP
 
+## Table of Contents
+
+- [Support](#support)
+- [Installation](#installation)
+  - [Installation from CDN](#installation-from-cdn)
+- [Examples](#examples)
+  - [ES6 Example](#es6-example)
+  - [CommonJS](#commonjs)
+- [API](#api)
+  - [`config(params)`](#configparams)
+  - [`log(event)`](#logeventlevel-type-workflowtype-workflowinstance-eventdata-account)
+  - [`flush()`](#flush)
+- [Working on Node and old browsers](#working-on-node-and-old-browsers)
+- [Write your own fetcher](#write-your-own-fetcher)
+- [Using in VTEX IO](#using-in-vtex-io-node-app-example)
+- [Splunk Documentation](#splunk-documentation)
+- [Development](#development)
+  - [Deploy](#deploy)
+
+
 ## Support
 
 - Node (with axios as dependency)
@@ -81,7 +101,7 @@ splunkEvents.logEvent(
 
 ## API
 
-#### config(params)
+### `config(params)`
 
 ```javascript
 {
@@ -135,7 +155,7 @@ splunkEvents.logEvent(
 }
 ```
 
-#### logEvent(level, type, workflowType, workflowInstance, eventData, account)
+### `logEvent(level, type, workflowType, workflowInstance, eventData, account)`
 
 `level` is the criticality of the event ('Critical','Important','Debug').
 
@@ -159,13 +179,13 @@ If `injectAditionalInfo` is set to true, this function adds some default data to
 - URI Protocol (`window.location.protocol`)
 - URI Hash (`window.location.hash`)
 
-#### flush()
+### `flush()`
 
 Immediately send all queued events to Splunk Server.
 
 This is not required when using the `autoFlush` option.
 
-#### Working on Node and old browsers
+## Working on Node and old browsers
 
 By default this lib doesn't have any dependencies for the newer browsers (it tries to use Fetch API).
 
@@ -185,7 +205,7 @@ splunkEvents.config({
 
 You can also write your own fetcher to choose your own dependencies for doing the requests (see the next section).
 
-#### Write your own fetcher
+## Write your own fetcher
 
 Just like you can pass axios as a request config (see section above), you can write your own fetcher by just following the same signature that axios use (see axios API documentation: https://github.com/mzabriskie/axios#axios-api).
 
@@ -215,6 +235,7 @@ splunkEvents.config({
   request: nodeFetchRequest,
 });
 ```
+
 ## Using in VTEX IO (node app example)
 
   Insert your splunk endpoint in your app policies (located at manifest.json) like so:
