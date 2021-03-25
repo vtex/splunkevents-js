@@ -24,7 +24,7 @@ function createOutputOptions(options) {
   return {
     banner,
     name: 'splunk-events',
-    exports: 'named',
+    exports: options.format === 'umd' ? 'default' : 'named',
     sourcemap: true,
     plugins: [
       ...(options.plugins || []),
