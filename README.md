@@ -307,3 +307,7 @@ Then choose between patch, minor and major version to release with the commands:
 * `releasy major --stable`
 
 After that, several bundles will be generated with Rollup and uploaded to the npm registry with the new version.
+
+## License
+
+Released under [MIT License](./LICENSE).
