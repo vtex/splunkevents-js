@@ -2,18 +2,43 @@
 
 Javascript lib to create Splunk Logs via HTTP
 
--------
-### Support
+## Support
 
 - Node (with axios as dependency)
 - Browser (IE8+, Firefox, Chrome, Safari and Opera)
 
--------
-### Setup
+## Installation
 
-```npm install splunk-events``` or ```yarn add splunk-events```
+This library is published in the NPM registry and can be installed using any compatible package manager.
 
--------
+```bash
+npm install splunk-events --save
+
+# For yarn, use the command below.
+yarn add splunk-events
+```
+
+### Installation from CDN
+
+This module has an UMD bundle available through JSDelivr and Unpkg CDNs.
+
+```html
+<!-- For UNPKG use the code below. -->
+<script src="https://unpkg.com/splunk-events"></script>
+
+<!-- For JSDelivr use the code below. -->
+<script src="https://cdn.jsdelivr.net/npm/splunk-events"></script>
+
+<script>
+  // UMD module is exposed through the "SplunkEvents" global variable.
+  console.log(window.SplunkEvents)
+</script>
+```
+
+## Examples
+
+Here you can find some examples on how to start using this library.
+
 ### ES6 Example
 
 ```javascript
@@ -34,8 +59,7 @@ splunkEvents.logEvent(
 );
 ```
 
--------
-### ES5 Example
+### CommonJS
 
 ```javascript
 var SplunkEvents = require('splunk-events');
@@ -55,11 +79,10 @@ splunkEvents.logEvent(
 );
 ```
 
--------
-### API
-
+## API
 
 #### config(params)
+
 ```javascript
 {
   // Required. Splunk server endpoint
@@ -114,40 +137,39 @@ splunkEvents.logEvent(
 
 #### logEvent(level, type, workflowType, workflowInstance, eventData, account)
 
-'level' is the criticality of the event ('Critical','Important','Debug').
+`level` is the criticality of the event ('Critical','Important','Debug').
 
-'type' is the type of the event ('Error','Warn','Info').
+`type` is the type of the event ('Error','Warn','Info').
 
-'workflowType' is an action or a flow's stage in the system.
+`workflowType` is an action or a flow's stage in the system.
 
-'workflowInstance' defines what id/element is being processed/executed/created in the workflowType.
+`workflowInstance` defines what id/element is being processed/executed/created in the workflowType.
 
-'eventData' is an object containing your custom data to send to Splunk. This object should be flat and properties with a 'null' or 'undefined' value will be **omitted**.
+`eventData` is an object containing your custom data to send to Splunk. This object should be flat and properties with a 'null' or 'undefined' value will be **omitted**.
 
-'account' is the `accountName` (e.g. 'dreamstore','gatewayqa','instoreqa').
+`account` is the `accountName` (e.g. 'dreamstore','gatewayqa','instoreqa').
 
-if 'injectAditionalInfo' is set to true, this function adds some default data to the event
-```
-- User Agent
-- Browser Language
-- Screen Resolution
-- URI Host
-- URI Path
-- URI Protocol
-- URI Hash
-```
+If `injectAditionalInfo` is set to true, this function adds some default data to the event
+
+- User Agent (`navigator.userAgent`)
+- Browser Language (`navigator.browserLanguage` or `navigator.language`)
+- Screen Resolution (`window.screen.availWidth` and `window.screen.availHeight`)
+- URI Host (`window.location.hostname`)
+- URI Path (`window.location.pathname`)
+- URI Protocol (`window.location.protocol`)
+- URI Hash (`window.location.hash`)
 
 #### flush()
 
 Immediately send all queued events to Splunk Server.
 
-This is not required when using the 'autoFlush' option.
+This is not required when using the `autoFlush` option.
 
 #### Working on Node and old browsers
 
 By default this lib doesn't have any dependencies for the newer browsers (it tries to use Fetch API).
 
-But to make it work on old browsers and Node you must use axios (0.13+) as a dependency by installing it (```npm install --save axios```) and setting it on Splunk events config:
+But to make it work on old browsers and Node you must use axios (0.13+) as a dependency by installing it (`npm install --save axios`) and setting it on Splunk events config:
 
 ```javascript
 import SplunkEvents from 'splunk-events';
@@ -193,9 +215,10 @@ splunkEvents.config({
   request: nodeFetchRequest,
 });
 ```
--------
-### Using in VTEX IO (node app example)
+## Using in VTEX IO (node app example)
+
   Insert your splunk endpoint in your app policies (located at manifest.json) like so:
+
   ```json
   {
     "policies": [
@@ -209,10 +232,12 @@ splunkEvents.config({
     ]
   }
   ```
-  If your endpoint has a port, you don't need to add it here. The protocol neither. Just the host...
+
+  If your endpoint has a port you don't need to add it here and neither the protocol, only the host.
 
   Then you have to create a new fetcher or tweak your if you already have one.
-  This is to add headers so IO can properly proxy the request...
+  This is to add headers so IO can properly proxy the request.
+
   ```javascript
   function splunkCustomFetcher(context) {
     const headers = context.headers || {}
@@ -230,33 +255,34 @@ splunkEvents.config({
   ```
 
   Finally you can configure your splunk cient like so:
+
   ```javascript
   splunkEvents.config({
-    // add your endpoint with http protocol and no ports, let IO do the proxying, trust the headers...
+    // add your endpoint with http protocol and no ports, let IO do the proxying, trust the headers.
     endpoint: `http://${SPLUNK_ENDPOINT}`,
     request: splunkCustomFetcher,
     token: 'YOUR_TOKEN_HERE',
   })
   ```
 
--------
-### Splunk Documentation
+## Splunk Documentation
+
 http://dev.splunk.com/view/event-collector/SP-CAAAE6P
 
-### Development
+## Development
 
-After setting up the project with ```npm install``` or ```yarn```, you can run ```npm build``` and ```npm link``` to test it on another project (see examples on how to test it above).
+After setting up the project with `npm install` or `yarn`, you can run `npm build` and `npm link` to test it on another project (see examples on how to test it above).
 
 ### Deploy
 
-To deploy this package to npm, install the releasy package with ```npm install -g releasy```
+To deploy this package to npm, install the releasy package with `npm install -g releasy`
 
-Make sure you are logged with the correct user (use ```npm login``` command)
+Make sure you are logged with the correct user (use `npm login` command)
 
 Then choose between patch, minor and major version to release with the commands:
 
-* ```releasy patch --stable```
-* ```releasy minor --stable```
-* ```releasy major --stable```
+* `releasy patch --stable`
+* `releasy minor --stable`
+* `releasy major --stable`
 
-After that, SplunkEvents.js will be generated with babel and uploaded to the npm registry with the new version.
+After that, several bundles will be generated with Rollup and uploaded to the npm registry with the new version.
