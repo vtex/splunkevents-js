@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "ES2015",
+    "target": "ES3",
+    "charset": "utf-8",
+    "newLine": "LF",
+    "sourceMap": true,
+    "declaration": true,
+    "declarationDir": "types/",
+    "declarationMap": true
+  },
+  "exclude": ["./src/**/*.test.ts", "./src/**/*.test.tsx"]
+}

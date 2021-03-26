@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.5.0] - 2021-03-26
+### Added
+- UMD and ESM build types.
+
 ## [1.4.2] - 2021-03-09
 ### Added
 - Custom header to be added in the request
