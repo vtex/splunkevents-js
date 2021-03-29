@@ -451,30 +451,16 @@ export default class SplunkEvents {
   }
 
   private formatEventsForSplunkBatch(events: SplunkEvent[]) {
-    let splunkBatchedFormattedEvents = ''
-
-    for (let i = 0; i < events.length; i++) {
-      splunkBatchedFormattedEvents += `\n${JSON.stringify(events[i])}\n`
-    }
-
-    return splunkBatchedFormattedEvents
+    return events.map((event) => JSON.stringify(event)).join('\n')
   }
 
   private validateConfig() {
-    if (this.token === null) {
-      throw new Error('Token must not be null')
+    if (this.token == null) {
+      throw new Error('Token must not be null nor undefined')
     }
 
-    if (this.token === undefined) {
-      throw new Error('Token must not be undefined')
-    }
-
-    if (this.endpoint === null) {
-      throw new Error('endpoint must not be null')
-    }
-
-    if (this.endpoint === undefined) {
-      throw new Error('endpoint must not be undefined')
+    if (this.endpoint == null) {
+      throw new Error('Endpoint must not be null nor undefined')
     }
   }
 }
