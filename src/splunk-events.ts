@@ -18,7 +18,7 @@ export interface Config {
    */
   autoRetryFlush?: boolean
   /**
-   * Timeout used to batch events together in one single request.
+   * Timeout, in milliseconds, used to batch events together in one single request.
    */
   debounceTime?: number
   /**
