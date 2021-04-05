@@ -5,8 +5,10 @@
   "main": "lib/splunk-events.min.js",
   "cdn": "lib/splunk-events.umd.min.js",
   "module": "lib/splunk-events.esm.min.js",
-  "browser": "src/splunk-events.ts",
   "types": "types/splunk-events.d.ts",
+  "unpkg": "lib/splunk-events.umd.min.js",
+  "jsdelivr": "lib/splunk-events.umd.min.js",
+  "umd:main": "lib/splunk-events.umd.min.js",
   "sideEffects": false,
   "scripts": {
     "test": "vtex-test-tools test",
