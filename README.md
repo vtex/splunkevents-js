@@ -12,7 +12,7 @@ Javascript lib to create Splunk Logs via HTTP
   - [CommonJS](#commonjs)
 - [API](#api)
   - [`config(params)`](#configparams)
-  - [`log(event)`](#logeventlevel-type-workflowtype-workflowinstance-eventdata-account)
+  - [`logEvent()`](#logeventlevel-type-workflowtype-workflowinstance-eventdata-account)
   - [`flush()`](#flush)
 - [Working on Node and old browsers](#working-on-node-and-old-browsers)
 - [Write your own fetcher](#write-your-own-fetcher)
