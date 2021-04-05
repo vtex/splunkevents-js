@@ -7,8 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Added
-- Configuration `useExponentialBackoff` and `exponentialBackoffLimit` to add
-  an exponential backoff strategy to request retry.
+- Configuration `useExponentialBackoff`, `maxNumberOfRetries`,
+  `exponentialBackoffLimit` to add an exponential backoff strategy
+  to request retry.
 
 ## [1.5.0] - 2021-03-26
 ### Added
