@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.6.0] - 2021-04-07
+### Added
+- Configuration `useExponentialBackoff`, `maxNumberOfRetries`,
+  `exponentialBackoffLimit` to add an exponential backoff strategy
+  to request retry.
+
 ## [1.5.0] - 2021-03-26
 ### Added
 - UMD and ESM build types.

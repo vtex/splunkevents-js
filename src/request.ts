@@ -11,16 +11,18 @@ export function fetchRequest(context: FetchContext) {
       typeof (global as any).fetch !== 'function')
   ) {
     console.log('Error, using fetchRequest without fetch object')
+
     return Promise.resolve(null)
   }
 
   return fetch(context.url, {
     ...context,
     body: context.data,
-  }).then(response => {
+  }).then((response) => {
     if (context.responseType === 'json') {
       return response.json()
     }
+
     return response
   })
 }
