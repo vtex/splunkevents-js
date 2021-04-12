@@ -181,7 +181,6 @@ export default class SplunkEvents {
       config?.maxNumberOfRetries ?? this.maxNumberOfRetries
     this.headers = {
       Authorization: `Splunk ${this.token}`,
-      'Content-Type': 'application/json',
       ...(config?.headers ?? {}),
     }
   }
