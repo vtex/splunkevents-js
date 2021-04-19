@@ -380,7 +380,7 @@ describe('SplunkEvents', () => {
       )
     })
 
-    it('should reset events to flush after successfull request', async () => {
+    it('should discard previous events after successfull request', async () => {
       const requestMock = jest.fn().mockReturnValue(Promise.resolve())
 
       splunkEvents.config({
@@ -418,6 +418,58 @@ describe('SplunkEvents', () => {
       expect(requestMock).toHaveBeenLastCalledWith(
         expect.objectContaining({
           data: expect.stringContaining('requestNum=2'),
+        })
+      )
+    })
+
+    it('should not drop pending events when requests succeed', async () => {
+      let resolve = () => {}
+
+      const requestMock = jest
+        .fn()
+        .mockReturnValue(Promise.resolve())
+        .mockImplementationOnce(
+          () =>
+            new Promise<void>((res) => {
+              resolve = res
+            })
+        )
+
+      splunkEvents.config({
+        endpoint: '/splunk',
+        token: 'splunk-token-123',
+        useExponentialBackoff: true,
+        request: requestMock,
+      })
+
+      splunkEvents.logEvent('debug', 'info', 'request', 'requestMockImpl', {
+        requestNum: 1,
+      })
+
+      await flushPromises()
+
+      expect(requestMock).toHaveBeenCalledTimes(1)
+      expect(
+        // @ts-expect-error: asserting on private property
+        splunkEvents.isBackoffInProgress
+      ).toBe(true)
+
+      splunkEvents.logEvent(
+        'debug',
+        'info',
+        'request',
+        'requestInFlightTest',
+        {}
+      )
+
+      resolve()
+
+      await flushPromises()
+
+      expect(requestMock).toHaveBeenCalledTimes(2)
+      expect(requestMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.stringContaining('requestInFlightTest'),
         })
       )
     })

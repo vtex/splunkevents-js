@@ -374,20 +374,28 @@ export default class SplunkEvents {
       })
   }
 
-  private _backoffFlush = () => {
+  private _backoffFlush = (): Promise<void> => {
     if (this.isBackoffInProgress) {
-      return
+      return Promise.resolve()
     }
 
     this.isBackoffInProgress = true
 
     const backoffMultiplier = 2
 
-    const executeFlush = (depth = 0) => {
-      return this.flush()
+    const executeFlush = (depth = 0): Promise<void> => {
+      this.pendingEvents = this.pendingEvents.concat(this.events)
+
+      this.events = []
+
+      return this.flush(this.pendingEvents)
         .then(() => {
-          this.events = []
+          this.pendingEvents = []
           this.isBackoffInProgress = false
+
+          if (this.events.length > 0) {
+            return this._backoffFlush()
+          }
         })
         .catch(() => {
           const waitTime = backoffMultiplier ** depth * 1_000
