@@ -27,17 +27,18 @@ describe('SplunkEvents', () => {
   it('should initialize events', () => {
     expect(splunkEvents).toBeDefined()
     expect(
-      // @ts-expect-error: events is private but we want to
-      // assert on it anyway without making it public
-      splunkEvents.events
-    ).toStrictEqual([])
+      // @ts-expect-error: private property
+      splunkEvents.flushStrategy
+    ).toBeNull()
+
     splunkEvents.config({
       endpoint: 'endpoint',
       token: '',
     })
+
     expect(
-      // @ts-expect-error: same as above
-      splunkEvents.events
+      // @ts-expect-error: private property
+      splunkEvents.flushStrategy.events
     ).toStrictEqual([])
   })
 
@@ -88,145 +89,6 @@ describe('SplunkEvents', () => {
         undefined
       )
     ).toThrowError('Event must not be undefined')
-  })
-
-  describe('Debounce strategy', () => {
-    it('should only make one request if called in timeout range', async () => {
-      splunkEvents.config({
-        endpoint: '/splunk',
-        token: 'splunk-token-123',
-        autoFlush: true,
-        debounceTime: 10 * SECOND,
-      })
-
-      const requestSpy = jest
-        .spyOn(SplunkEvents.prototype, 'request')
-        .mockImplementation(() => Promise.resolve(null))
-
-      splunkEvents.logEvent('debug', 'info', 'checkout', 'checkout-cart', {
-        description: 'User accessed cart page',
-      })
-
-      // advance to half the time of the timeout delay
-      jest.advanceTimersByTime(5 * SECOND)
-
-      splunkEvents.logEvent('debug', 'info', 'checkout', 'checkout-profile', {
-        description: 'User accessed profile step',
-      })
-
-      // wait for timeout to end
-      jest.runAllTimers()
-
-      expect(requestSpy).toHaveBeenCalledTimes(1)
-      expect(requestSpy).toHaveBeenLastCalledWith(
-        expect.objectContaining({
-          data: expect.stringContaining('workflowInstance=\\"checkout-cart\\"'),
-        })
-      )
-      expect(requestSpy).toHaveBeenLastCalledWith(
-        expect.objectContaining({
-          data: expect.stringContaining(
-            'workflowInstance=\\"checkout-profile\\"'
-          ),
-        })
-      )
-
-      await flushPromises()
-
-      // this should be enqueued for 10 seconds from now
-      splunkEvents.logEvent('debug', 'info', 'checkout', 'checkout-payment', {
-        description: 'User accessed payment step',
-      })
-
-      jest.advanceTimersByTime(5 * SECOND)
-
-      expect(requestSpy).toHaveBeenCalledTimes(1)
-
-      jest.advanceTimersByTime(5 * SECOND)
-
-      expect(requestSpy).toHaveBeenCalledTimes(2)
-      expect(requestSpy).toHaveBeenLastCalledWith(
-        expect.objectContaining({
-          data: expect.stringContaining(
-            'workflowInstance=\\"checkout-payment\\"'
-          ),
-        })
-      )
-    })
-
-    it('should update debounce time', async () => {
-      splunkEvents.config({
-        endpoint: '/splunk',
-        token: 'splunk-token-123',
-        debounceTime: 1 * SECOND,
-      })
-
-      const requestSpy = jest
-        .spyOn(SplunkEvents.prototype, 'request')
-        .mockImplementation(() => Promise.resolve(null))
-
-      splunkEvents.logEvent('debug', 'info', 'checkout', 'add-to-cart', {
-        itemId: '320',
-      })
-
-      expect(requestSpy).toHaveBeenCalledTimes(0)
-
-      jest.advanceTimersByTime(1 * SECOND)
-      await flushPromises()
-
-      expect(requestSpy).toHaveBeenCalledTimes(1)
-
-      splunkEvents.config({ debounceTime: 2 * SECOND })
-      splunkEvents.logEvent('debug', 'info', 'checkout', 'update-item', {
-        index: 0,
-        quantity: 10,
-      })
-
-      jest.advanceTimersByTime(1 * SECOND)
-      await flushPromises()
-
-      expect(requestSpy).toHaveBeenCalledTimes(1)
-
-      jest.advanceTimersByTime(1 * SECOND)
-      await flushPromises()
-
-      expect(requestSpy).toHaveBeenCalledTimes(2)
-    })
-
-    it('should use configured debounce time when a request fails', async () => {
-      const requestMock = jest.fn(() => Promise.resolve({} as Response))
-
-      splunkEvents.config({
-        endpoint: '/splunk',
-        token: 'splunk-token-123',
-        debounceTime: 2 * SECOND,
-        autoRetryFlush: true,
-        request: requestMock,
-      })
-
-      requestMock.mockReturnValueOnce(Promise.reject('request failed'))
-
-      splunkEvents.logEvent('debug', 'info', 'request', 'defaultRequestImpl', {
-        doesDefaultRequestWork: true,
-      })
-
-      jest.runOnlyPendingTimers()
-      await flushPromises()
-
-      expect(requestMock).toHaveBeenCalledTimes(1)
-
-      // Skip half of the debounce time
-      jest.advanceTimersByTime(1 * SECOND)
-
-      expect(requestMock).toHaveBeenCalledTimes(1)
-
-      // Skip the remaining of the debounce time
-      jest.advanceTimersByTime(1 * SECOND)
-
-      await flushPromises()
-
-      expect(requestMock).toHaveBeenCalledTimes(2)
-    })
   })
 
   it('should use request function passed in config', async () => {
@@ -299,7 +161,119 @@ describe('SplunkEvents', () => {
     )
   })
 
+  describe('Debounce strategy', () => {
+    it('should only make one request if called in timeout range', async () => {
+      splunkEvents.config({
+        endpoint: '/splunk',
+        token: 'splunk-token-123',
+        autoFlush: true,
+        debounceTime: 10 * SECOND,
+      })
+
+      const requestSpy = jest
+        .spyOn(SplunkEvents.prototype, 'request')
+        .mockImplementation(() => Promise.resolve(null))
+
+      splunkEvents.logEvent('debug', 'info', 'checkout', 'checkout-cart', {
+        description: 'User accessed cart page',
+      })
+
+      // advance to half the time of the timeout delay
+      jest.advanceTimersByTime(5 * SECOND)
+
+      splunkEvents.logEvent('debug', 'info', 'checkout', 'checkout-profile', {
+        description: 'User accessed profile step',
+      })
+
+      // wait for timeout to end
+      jest.runAllTimers()
+
+      expect(requestSpy).toHaveBeenCalledTimes(1)
+      expect(requestSpy).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          data: expect.stringContaining('workflowInstance=\\"checkout-cart\\"'),
+        })
+      )
+      expect(requestSpy).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          data: expect.stringContaining(
+            'workflowInstance=\\"checkout-profile\\"'
+          ),
+        })
+      )
+
+      await flushPromises()
+
+      // this should be enqueued for 10 seconds from now
+      splunkEvents.logEvent('debug', 'info', 'checkout', 'checkout-payment', {
+        description: 'User accessed payment step',
+      })
+
+      jest.advanceTimersByTime(5 * SECOND)
+
+      expect(requestSpy).toHaveBeenCalledTimes(1)
+
+      jest.advanceTimersByTime(5 * SECOND)
+
+      expect(requestSpy).toHaveBeenCalledTimes(2)
+      expect(requestSpy).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          data: expect.stringContaining(
+            'workflowInstance=\\"checkout-payment\\"'
+          ),
+        })
+      )
+    })
+
+    it('should use configured debounce time when a request fails', async () => {
+      const requestMock = jest.fn(() => Promise.resolve({} as Response))
+
+      splunkEvents.config({
+        endpoint: '/splunk',
+        token: 'splunk-token-123',
+        debounceTime: 2 * SECOND,
+        autoRetryFlush: true,
+        request: requestMock,
+      })
+
+      requestMock.mockReturnValueOnce(Promise.reject('request failed'))
+
+      splunkEvents.logEvent('debug', 'info', 'request', 'defaultRequestImpl', {
+        doesDefaultRequestWork: true,
+      })
+
+      jest.runOnlyPendingTimers()
+      await flushPromises()
+
+      expect(requestMock).toHaveBeenCalledTimes(1)
+
+      // Skip half of the debounce time
+      jest.advanceTimersByTime(1 * SECOND)
+
+      expect(requestMock).toHaveBeenCalledTimes(1)
+
+      // Skip the remaining of the debounce time
+      jest.advanceTimersByTime(1 * SECOND)
+
+      await flushPromises()
+
+      expect(requestMock).toHaveBeenCalledTimes(2)
+    })
+  })
+
   describe('Exponential backoff', () => {
+    it('should automatically enable auto flush', () => {
+      splunkEvents.config({
+        useExponentialBackoff: true,
+        autoFlush: false,
+      })
+
+      expect(
+        // @ts-expect-error: private property
+        splunkEvents.autoFlush
+      ).toBe(true)
+    })
+
     it('should correctly backoff exponentially', async () => {
       const requestMock = jest
         .fn()
@@ -451,7 +425,7 @@ describe('SplunkEvents', () => {
       expect(requestMock).toHaveBeenCalledTimes(1)
       expect(
         // @ts-expect-error: asserting on private property
-        splunkEvents.isBackoffInProgress
+        splunkEvents.flushStrategy.isBackoffInProgress
       ).toBe(true)
 
       splunkEvents.logEvent(

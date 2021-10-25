@@ -1,7 +1,12 @@
+export interface DebouncedFn {
+  (): void
+  clear(): void
+}
+
 export default function debounce<T>(
   func: (...args: T[]) => void | Promise<void>,
   wait = 100
-) {
+): DebouncedFn {
   let timeout: NodeJS.Timeout | null = null
   let cancel: (() => void) | null = null
 

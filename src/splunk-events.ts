@@ -1,5 +1,7 @@
-import debounce from './debounce'
+import { DebounceStrategy } from './debounceStrategy'
+import { ExponentialBackoffStrategy } from './exponentialBackoffStrategy'
 import { FetchContext, fetchRequest } from './request'
+import type { EventData, SplunkEvent, Strategy } from './strategy'
 
 export { FetchContext }
 
@@ -92,17 +94,7 @@ export interface Config {
   maxNumberOfRetries?: number
 }
 
-type EventData = Record<string, string | number | boolean>
-
-interface SplunkEvent {
-  host: string
-  sourcetype: string
-  time?: number
-  event: EventData | string
-}
-
-const DEFAULT_EXPONENTIAL_BACKOFF_LIMIT = 60_000
-const DEFAULT_DEBOUNCE_TIME = 2_000
+const DEFAULT_USE_EXPONENTIAL_BACKOFF = false
 
 export default class SplunkEvents {
   private _requestImpl: (
@@ -110,79 +102,90 @@ export default class SplunkEvents {
   ) => Promise<Response | null> = fetchRequest
 
   private autoFlush = true
-  private autoRetryFlush = true
-  private debounceTime = DEFAULT_DEBOUNCE_TIME
-  private debouncedFlush: { (): Promise<void>; clear(): void }
   private debug = false
   private endpoint?: string
-  private events: SplunkEvent[] = []
   private headers?: HeadersInit
   private host = '-'
   private injectAdditionalInfo = false
   private injectTimestamp = false
-  private isSendingEvents = false
   private path = '/services/collector/event'
-  private pendingEvents: SplunkEvent[] = []
   private shouldParseEventData = true
   private source = 'log'
   private token?: string
-  private flushPending = false
-  private useExponentialBackoff = false
-  private exponentialBackoffLimit = DEFAULT_EXPONENTIAL_BACKOFF_LIMIT
-  private isBackoffInProgress = false
-  private maxNumberOfRetries = Infinity
+
+  private configured = false
+
+  private flushStrategy: Strategy | null = null
 
   constructor(config?: Config) {
-    this.debouncedFlush = debounce(this._debouncedFlush, this.debounceTime)
-
-    if (config) {
-      this.config(config)
+    if (!config) {
+      return
     }
+
+    this.config(config)
   }
 
   /**
-   * Configure (or reconfigure) this Splunk Event instance.
+   * Configure this Splunk Event instance.
    */
   public config(config: Partial<Config>) {
+    if (this.configured) {
+      return
+    }
+
+    this.configured = true
+
     this.endpoint = config?.endpoint ?? this.endpoint // required
     this.token = config?.token ?? this.endpoint // required
     this.injectAdditionalInfo =
       config?.injectAditionalInfo ??
       config?.injectAdditionalInfo ??
       this.injectAdditionalInfo
-    this.useExponentialBackoff =
-      config?.useExponentialBackoff ?? this.useExponentialBackoff
-    this.exponentialBackoffLimit =
-      config?.exponentialBackoffLimit ?? this.exponentialBackoffLimit
-    this.autoFlush = this.useExponentialBackoff
-      ? // should always be true when using exponential backoff strategy
-        true
-      : config?.autoFlush ?? this.autoFlush
-    this.autoRetryFlush = config?.autoRetryFlush ?? this.autoRetryFlush
+
+    this.autoFlush = config?.autoFlush ?? this.autoFlush
+
     this.source = config?.source ?? this.source
     this.path = config?.path ?? this.path
     this.host = config?.host ?? this.host
     this.debug = config?.debug ?? this.debug
 
-    const prevDebounceTime = this.debounceTime
-
-    this.debounceTime = config?.debounceTime ?? this.debounceTime
-
-    if (this.debounceTime !== prevDebounceTime) {
-      this.debouncedFlush.clear()
-      this.debouncedFlush = debounce(this._debouncedFlush, this.debounceTime)
-    }
-
     this._requestImpl = config?.request ?? this._requestImpl
+
     this.injectTimestamp = config?.injectTimestamp ?? this.injectTimestamp
     this.shouldParseEventData =
       config?.shouldParseEventData ?? this.shouldParseEventData
-    this.maxNumberOfRetries =
-      config?.maxNumberOfRetries ?? this.maxNumberOfRetries
+
     this.headers = {
       Authorization: `Splunk ${this.token}`,
       'Content-Type': 'application/json',
       ...(config?.headers ?? {}),
+    }
+
+    const useExponentialBackoff =
+      config?.useExponentialBackoff ?? DEFAULT_USE_EXPONENTIAL_BACKOFF
+
+    // Exponential backoff configurations
+    const exponentialBackoffLimit = config?.exponentialBackoffLimit
+    const maxNumberOfRetries = config?.maxNumberOfRetries
+
+    // Debounce configurations
+    const debounceTime = config?.debounceTime
+    const autoRetryFlush = config?.autoRetryFlush ?? true
+
+    if (useExponentialBackoff) {
+      this.autoFlush = true
+
+      this.flushStrategy = new ExponentialBackoffStrategy({
+        sendEvents: this.flush,
+        exponentialBackoffLimit,
+        maxNumberOfRetries,
+      })
+    } else {
+      this.flushStrategy = new DebounceStrategy({
+        sendEvents: this.flush,
+        debounceTime,
+        autoRetryFlush,
+      })
     }
   }
 
@@ -217,6 +220,10 @@ export default class SplunkEvents {
     eventData?: EventData | null,
     account = ''
   ) => {
+    if (this.flushStrategy == null) {
+      throw new Error('SplunkEvents instance is not configured properly')
+    }
+
     this.validateEvent(eventData)
 
     const eventObj = {
@@ -240,10 +247,10 @@ export default class SplunkEvents {
       event,
     }
 
-    this.events.push(data)
+    this.flushStrategy.addEvent(data)
 
     if (this.autoFlush) {
-      this.flushEvents()
+      this.flushStrategy.flushEvents()
     }
   }
 
@@ -323,25 +330,19 @@ export default class SplunkEvents {
   }
 
   /**
-   * Internal flush that contains the logic for debouncing or
-   * backing off exponentially.
-   */
-  private flushEvents = () => {
-    if (this.useExponentialBackoff) {
-      this._backoffFlush()
-    } else {
-      this.debouncedFlush()
-    }
-  }
-
-  /**
    * Flushes pending events into one single request.
    *
    * You won't need to use this function unless you configured
    * this instance to not auto flush the events.
    */
-  public flush = async (events = this.events): Promise<void> => {
+  public flush = async (events?: SplunkEvent[]): Promise<void> => {
     this.validateConfig()
+
+    if (!events) {
+      this.flushStrategy!.flushEvents()
+
+      return
+    }
 
     if (events.length === 0) {
       return
@@ -374,89 +375,6 @@ export default class SplunkEvents {
       })
   }
 
-  private _backoffFlush = (): Promise<void> => {
-    if (this.isBackoffInProgress) {
-      return Promise.resolve()
-    }
-
-    this.isBackoffInProgress = true
-
-    const backoffMultiplier = 2
-
-    const executeFlush = (depth = 0): Promise<void> => {
-      this.pendingEvents = this.pendingEvents.concat(this.events)
-
-      this.events = []
-
-      return this.flush(this.pendingEvents)
-        .then(() => {
-          this.pendingEvents = []
-          this.isBackoffInProgress = false
-
-          if (this.events.length > 0) {
-            return this._backoffFlush()
-          }
-
-          return Promise.resolve()
-        })
-        .catch(() => {
-          const waitTime = backoffMultiplier ** depth * 1_000
-
-          if (depth > this.maxNumberOfRetries) {
-            this.events = []
-            this.isBackoffInProgress = false
-
-            return
-          }
-
-          return new Promise((resolve, reject) => {
-            setTimeout(() => {
-              executeFlush(depth + 1)
-                .then(resolve, reject)
-                .catch(reject)
-            }, Math.min(waitTime, this.exponentialBackoffLimit))
-          })
-        })
-    }
-
-    return executeFlush()
-  }
-
-  private _debouncedFlush = () => {
-    if (this.isSendingEvents) {
-      this.flushPending = true
-
-      return
-    }
-
-    this.pendingEvents = Array.from(this.events)
-    this.events = []
-    this.isSendingEvents = true
-
-    this.flush(this.pendingEvents)
-      .then(() => {
-        this.pendingEvents = []
-        this.isSendingEvents = false
-
-        if (!this.flushPending) {
-          return
-        }
-
-        this.flushPending = false
-
-        return this._debouncedFlush()
-      })
-      .catch(() => {
-        this.events = this.events.concat(this.pendingEvents)
-        this.pendingEvents = []
-        this.isSendingEvents = false
-
-        if (this.autoRetryFlush) {
-          this.flushEvents()
-        }
-      })
-  }
-
   private formatEventsForSplunkBatch(events: SplunkEvent[]) {
     return events.map((event) => JSON.stringify(event)).join('\n')
   }
@@ -468,6 +386,12 @@ export default class SplunkEvents {
 
     if (this.endpoint == null) {
       throw new Error('Endpoint must not be null nor undefined')
+    }
+
+    if (this.flushStrategy == null) {
+      throw new Error(
+        'Instance must be configured (either by constructor or calling config method) before flushing events'
+      )
     }
   }
 }
