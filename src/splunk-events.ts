@@ -396,6 +396,8 @@ export default class SplunkEvents {
           if (this.events.length > 0) {
             return this._backoffFlush()
           }
+
+          return Promise.resolve()
         })
         .catch(() => {
           const waitTime = backoffMultiplier ** depth * 1_000
